@@ -252,15 +252,180 @@ const Home = () => {
                 <span className="relative z-10 font-semibold">Get Started</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Link>
-              <MobileMenu
-                isOpen={isMobileMenuOpen}
-                onToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                onClose={() => setIsMobileMenuOpen(false)}
-              />
+              {/* Mobile menu button only */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden p-2 rounded-lg text-white hover:text-pink-300 transition-all duration-300 hover:bg-white/10 relative"
+                style={{ zIndex: 2147483647 }}
+                aria-label="Toggle mobile menu"
+                aria-expanded={isMobileMenuOpen}
+              >
+                <div className="relative w-6 h-6 flex items-center justify-center">
+                  <div
+                    className={`absolute transition-all duration-500 ease-in-out ${
+                      isMobileMenuOpen
+                        ? "opacity-0 rotate-180 scale-50"
+                        : "opacity-100 rotate-0 scale-100"
+                    }`}
+                  >
+                    <Menu className="w-6 h-6" />
+                  </div>
+                  <div
+                    className={`absolute transition-all duration-500 ease-in-out ${
+                      isMobileMenuOpen
+                        ? "opacity-100 rotate-0 scale-100"
+                        : "opacity-0 rotate-180 scale-50"
+                    }`}
+                  >
+                    <X className="w-6 h-6" />
+                  </div>
+                </div>
+              </button>
             </div>
           </div>
         </div>
       </nav>
+
+      {/* Mobile Menu Panel - Rendered at root level for proper z-index */}
+      <div
+        className={`fixed inset-0 md:hidden transition-all duration-500 ease-in-out ${
+          isMobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
+        style={{ zIndex: 2147483646 }}
+      >
+        {/* Backdrop */}
+        <div
+          className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-all duration-500 ${
+            isMobileMenuOpen ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+
+        {/* Menu Panel */}
+        <div
+          className={`absolute top-0 right-0 w-72 max-w-[85vw] h-full bg-gradient-to-br from-gray-900 via-gray-800 to-black shadow-2xl border-l border-white/10 transition-all duration-500 ease-in-out ${
+            isMobileMenuOpen
+              ? "transform translate-x-0"
+              : "transform translate-x-full"
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex flex-col h-full relative overflow-hidden">
+            {/* Background decoration */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute top-10 right-10 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl"></div>
+              <div className="absolute bottom-20 left-10 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
+            </div>
+
+            {/* Header */}
+            <div className="relative z-10 flex items-center justify-center p-4 border-b border-white/20 backdrop-blur-sm bg-white/5">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500 rounded-lg flex items-center justify-center shadow-lg">
+                  <Heart className="w-4 h-4 text-white fill-current" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white">LoveConnect</h2>
+                  <p className="text-xs text-gray-400">Find Your Soulmate</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation Links */}
+            <nav className="flex-1 px-4 py-4 relative z-10">
+              <div className="space-y-1">
+                <a
+                  href="#features"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group"
+                >
+                  <span className="text-lg">✨</span>
+                  <span className="text-sm font-medium">Features</span>
+                </a>
+                <a
+                  href="#testimonials"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group"
+                >
+                  <span className="text-lg">💕</span>
+                  <span className="text-sm font-medium">Success Stories</span>
+                </a>
+                <a
+                  href="#download"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group"
+                >
+                  <span className="text-lg">📱</span>
+                  <span className="text-sm font-medium">Download</span>
+                </a>
+                <a
+                  href="#about"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group"
+                >
+                  <span className="text-lg">👥</span>
+                  <span className="text-sm font-medium">About Us</span>
+                </a>
+              </div>
+
+              {/* Divider */}
+              <div className="my-4 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+
+              {/* Additional Links */}
+              <div className="space-y-1">
+                <a
+                  href="#help"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300"
+                >
+                  <span className="text-lg">🤝</span>
+                  <span className="text-sm font-medium">Help & Support</span>
+                </a>
+                <a
+                  href="#privacy"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300"
+                >
+                  <span className="text-lg">🔒</span>
+                  <span className="text-sm font-medium">Privacy Policy</span>
+                </a>
+              </div>
+            </nav>
+
+            {/* CTA Buttons */}
+            <div className="p-4 border-t border-white/20 backdrop-blur-sm bg-white/5 relative z-10">
+              <div className="space-y-3">
+                <Link
+                  to="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block w-full text-center py-3 px-4 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-all duration-300 border border-white/20 hover:border-white/30 text-sm"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block w-full text-center py-3 px-4 bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-pink-600 hover:via-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-pink-500/25 text-sm"
+                >
+                  Get Started Free ✨
+                </Link>
+              </div>
+
+              {/* App Store Buttons */}
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button className="flex items-center justify-center space-x-1 py-2 px-3 bg-white/10 rounded-md text-white text-xs font-medium hover:bg-white/20 transition-all duration-300">
+                  <span className="text-sm">📱</span>
+                  <span>App Store</span>
+                </button>
+                <button className="flex items-center justify-center space-x-1 py-2 px-3 bg-white/10 rounded-md text-white text-xs font-medium hover:bg-white/20 transition-all duration-300">
+                  <span className="text-sm">🤖</span>
+                  <span>Play Store</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Hero Section - Revolutionary Design */}
       <section className="relative min-h-[80vh] flex items-center justify-center pt-20 pb-10 overflow-hidden">

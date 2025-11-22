@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Search, Filter } from 'lucide-react';
-import { useChat } from '../hooks/useChat';
-import Avatar from '../components/Avatar';
-import { formatTimestamp } from '../utils/helpers';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Heart, MessageCircle, Search, Filter } from "lucide-react";
+import { useChat } from "../hooks/useChat";
+import Avatar from "../components/Avatar";
+import { formatTimestamp } from "../utils/helpers";
 
 const Matches = () => {
   const navigate = useNavigate();
   const { matches, getUserById } = useChat();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [filterOnline, setFilterOnline] = useState(false);
 
   const filteredMatches = matches.filter((match) => {
-    const matchesSearch = match.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = match.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     const matchesOnline = !filterOnline || match.online;
     return matchesSearch && matchesOnline;
   });
@@ -35,7 +37,10 @@ const Matches = () => {
         {/* Background Decoration */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-pink-300/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-purple-300/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div
+            className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-purple-300/10 rounded-full blur-3xl animate-pulse"
+            style={{ animationDelay: "2s" }}
+          ></div>
         </div>
 
         <div className="text-center max-w-lg relative z-10 animate-fade-in">
@@ -47,10 +52,11 @@ const Matches = () => {
               Your Love Story Awaits! ✨
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg leading-relaxed">
-              Start your journey to find meaningful connections. Swipe, match, and discover amazing people waiting to meet you!
+              Start your journey to find meaningful connections. Swipe, match,
+              and discover amazing people waiting to meet you!
             </p>
             <button
-              onClick={() => navigate('/discover')}
+              onClick={() => navigate("/discover")}
               className="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-600 hover:via-purple-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
             >
               Start Your Adventure 💫
@@ -66,8 +72,14 @@ const Matches = () => {
       {/* Background Decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-10 -right-10 w-72 h-72 bg-pink-300/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/2 -left-10 w-64 h-64 bg-purple-300/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute -bottom-10 right-1/4 w-56 h-56 bg-indigo-300/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
+        <div
+          className="absolute top-1/2 -left-10 w-64 h-64 bg-purple-300/10 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "2s" }}
+        ></div>
+        <div
+          className="absolute -bottom-10 right-1/4 w-56 h-56 bg-indigo-300/10 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "4s" }}
+        ></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-6">
@@ -80,12 +92,17 @@ const Matches = () => {
             Your Matches ✨
           </h1>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
-            {matches.length} amazing {matches.length === 1 ? 'connection' : 'connections'} waiting for you
+            {matches.length} amazing{" "}
+            {matches.length === 1 ? "connection" : "connections"} waiting for
+            you
           </p>
         </div>
 
         {/* Enhanced Search and Filter */}
-        <div className="mb-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+        <div
+          className="mb-8 animate-slide-up"
+          style={{ animationDelay: "0.2s" }}
+        >
           <div className="bg-white/80 dark:bg-dark-800/80 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-white/20">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative group">
@@ -101,14 +118,16 @@ const Matches = () => {
               <button
                 onClick={() => setFilterOnline(!filterOnline)}
                 className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
-                  filterOnline 
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg' 
-                    : 'bg-white/70 dark:bg-dark-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-dark-600 hover:border-purple-300'
+                  filterOnline
+                    ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg"
+                    : "bg-white/70 dark:bg-dark-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-dark-600 hover:border-purple-300"
                 }`}
               >
                 <Filter className="w-5 h-5" />
                 <span>Online Only</span>
-                {filterOnline && <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>}
+                {filterOnline && (
+                  <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+                )}
               </button>
             </div>
           </div>
@@ -133,7 +152,7 @@ const Matches = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredMatches.map((match, index) => {
               const user = getUserById(match.userId);
-              
+
               return (
                 <div
                   key={match.id}
@@ -149,7 +168,7 @@ const Matches = () => {
                         alt={match.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       />
-                      
+
                       {/* Enhanced Online Status */}
                       {match.online && (
                         <div className="absolute top-3 right-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center space-x-1">
@@ -184,7 +203,9 @@ const Matches = () => {
                       <div className="flex items-center justify-between">
                         <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center space-x-2">
                           <div className="w-2 h-2 bg-pink-500 rounded-full animate-pulse"></div>
-                          <span>Matched {formatTimestamp(match.timestamp)}</span>
+                          <span>
+                            Matched {formatTimestamp(match.timestamp)}
+                          </span>
                         </div>
                         <button
                           onClick={(e) => handleMessageClick(e, match)}
@@ -202,7 +223,10 @@ const Matches = () => {
         )}
 
         {/* Enhanced Call to Action */}
-        <div className="mt-16 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+        <div
+          className="mt-16 animate-fade-in"
+          style={{ animationDelay: "0.4s" }}
+        >
           <div className="bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/10 backdrop-blur-lg rounded-3xl p-8 text-center border border-white/20 shadow-xl">
             <div className="bg-gradient-to-br from-pink-500 to-purple-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
               <Heart className="w-10 h-10 text-white fill-current animate-pulse" />
@@ -214,7 +238,7 @@ const Matches = () => {
               The perfect match could be just one swipe away. Keep exploring!
             </p>
             <button
-              onClick={() => navigate('/discover')}
+              onClick={() => navigate("/discover")}
               className="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-600 hover:via-purple-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
             >
               Continue Your Journey ✨
