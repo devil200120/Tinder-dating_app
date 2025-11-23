@@ -120,112 +120,129 @@ const AdminLogin = () => {
       {/* Login Form */}
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="w-full max-w-md"
+          initial={{ opacity: 0, scale: 0.8, y: 50 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ 
+            duration: 1.2, 
+            ease: "easeOut",
+            type: "spring",
+            stiffness: 100
+          }}
+          className="w-full max-w-sm"
         >
-          {/* Logo Section */}
-          <div className="text-center mb-8">
+          {/* Logo Section - Cinematic Entry */}
+          <motion.div 
+            className="text-center mb-6"
+            initial={{ opacity: 0, y: -100, scale: 0.5 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ 
+              delay: 0.3, 
+              duration: 1.5, 
+              ease: "easeOut",
+              type: "spring",
+              stiffness: 120
+            }}
+          >
             <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ 
-                delay: 0.2, 
-                type: "spring", 
-                stiffness: 200,
-                damping: 10
+              initial={{ scale: 0, rotate: -180, opacity: 0 }}
+              animate={{ scale: 1, rotate: 0, opacity: 1 }}
+              transition={{
+                delay: 0.8,
+                duration: 1.8,
+                ease: "easeOut",
+                type: "spring",
+                stiffness: 150,
+                damping: 12
               }}
-              whileHover={{ 
-                scale: 1.1,
-                rotate: [0, -5, 5, 0],
-                transition: { duration: 0.5 }
+              whileHover={{
+                scale: 1.05,
+                rotate: [0, -3, 3, 0],
+                transition: { duration: 0.4 },
               }}
-              className="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600 rounded-full mb-6 shadow-2xl relative overflow-hidden cursor-pointer"
+              className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600 rounded-full mb-4 shadow-xl relative overflow-hidden cursor-pointer"
             >
               {/* Animated Background Pattern */}
-              <motion.div 
+              <motion.div
                 className="absolute inset-0"
                 animate={{
                   background: [
                     "linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
                     "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)",
                     "linear-gradient(225deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-                    "linear-gradient(315deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)"
-                  ]
+                    "linear-gradient(315deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)",
+                  ],
                 }}
                 transition={{
                   duration: 4,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
                 }}
               >
                 {/* Floating Dots */}
-                <motion.div 
-                  className="absolute top-2 right-3 w-3 h-3 bg-white/40 rounded-full"
+                <motion.div
+                  className="absolute top-1 right-2 w-2 h-2 bg-white/40 rounded-full"
                   animate={{
-                    scale: [1, 1.5, 1],
-                    opacity: [0.4, 0.8, 0.4],
-                    x: [0, 2, 0],
-                    y: [0, -1, 0]
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-                <motion.div 
-                  className="absolute bottom-3 left-3 w-2 h-2 bg-white/30 rounded-full"
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.3, 0.7, 0.3],
-                    x: [0, -1, 0],
-                    y: [0, 1, 0]
+                    scale: [1, 1.3, 1],
+                    opacity: [0.4, 0.7, 0.4],
+                    x: [0, 1, 0],
+                    y: [0, -0.5, 0],
                   }}
                   transition={{
                     duration: 2.5,
                     repeat: Infinity,
                     ease: "easeInOut",
-                    delay: 0.5
                   }}
                 />
-                <motion.div 
-                  className="absolute top-4 left-1/2 w-1.5 h-1.5 bg-white/35 rounded-full"
+                <motion.div
+                  className="absolute bottom-2 left-2 w-1.5 h-1.5 bg-white/30 rounded-full"
                   animate={{
-                    scale: [1, 1.8, 1],
-                    opacity: [0.35, 0.9, 0.35],
-                    rotate: [0, 180, 360]
+                    scale: [1, 1.2, 1],
+                    opacity: [0.3, 0.6, 0.3],
+                    x: [0, -0.5, 0],
+                    y: [0, 0.5, 0],
                   }}
                   transition={{
-                    duration: 4,
+                    duration: 2,
                     repeat: Infinity,
                     ease: "easeInOut",
-                    delay: 1
+                    delay: 0.4,
                   }}
                 />
-              </motion.div>
-              
-              {/* Main Logo Icon with Enhanced Animation */}
-              <div className="relative z-10 flex items-center justify-center">
-                <motion.svg 
-                  width="44" 
-                  height="44" 
-                  viewBox="0 0 40 40" 
-                  fill="none" 
-                  className="text-white drop-shadow-2xl"
+                <motion.div
+                  className="absolute top-3 left-1/2 w-1 h-1 bg-white/35 rounded-full"
                   animate={{
-                    y: [0, -2, 0],
-                    filter: [
-                      "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
-                      "drop-shadow(0 8px 16px rgba(0,0,0,0.4))",
-                      "drop-shadow(0 4px 8px rgba(0,0,0,0.3))"
-                    ]
+                    scale: [1, 1.5, 1],
+                    opacity: [0.35, 0.8, 0.35],
+                    rotate: [0, 120, 240, 360],
                   }}
                   transition={{
                     duration: 3,
                     repeat: Infinity,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
+                    delay: 0.8,
+                  }}
+                />
+              </motion.div>
+
+              <div className="relative z-10 flex items-center justify-center">
+                <motion.svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 40 40"
+                  fill="none"
+                  className="text-white drop-shadow-lg"
+                  animate={{
+                    y: [0, -1, 0],
+                    filter: [
+                      "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+                      "drop-shadow(0 4px 8px rgba(0,0,0,0.4))",
+                      "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+                    ],
+                  }}
+                  transition={{
+                    duration: 2.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
                   }}
                 >
                   {/* Animated Heart Shape */}
@@ -233,32 +250,32 @@ const AdminLogin = () => {
                     d="M20 35C20 35 3.5 23.5 3.5 14C3.5 9 7.5 5 12.5 5C15.5 5 18 6.5 20 9C22 6.5 24.5 5 27.5 5C32.5 5 36.5 9 36.5 14C36.5 23.5 20 35 20 35Z"
                     fill="currentColor"
                     initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ 
-                      pathLength: 1, 
+                    animate={{
+                      pathLength: 1,
                       opacity: 1,
-                      scale: [1, 1.05, 1]
+                      scale: [1, 1.05, 1],
                     }}
                     transition={{
                       pathLength: { duration: 2, ease: "easeInOut" },
                       opacity: { duration: 1 },
-                      scale: { 
+                      scale: {
                         duration: 2,
                         repeat: Infinity,
-                        ease: "easeInOut"
-                      }
+                        ease: "easeInOut",
+                      },
                     }}
                   />
-                  
+
                   {/* Animated Admin Crown with Sparkles */}
                   <motion.g
                     animate={{
                       y: [0, -1, 0],
-                      rotate: [0, 2, 0, -2, 0]
+                      rotate: [0, 2, 0, -2, 0],
                     }}
                     transition={{
                       duration: 4,
                       repeat: Infinity,
-                      ease: "easeInOut"
+                      ease: "easeInOut",
                     }}
                   >
                     <motion.path
@@ -271,16 +288,16 @@ const AdminLogin = () => {
                         fill: [
                           "url(#crown-gradient)",
                           "url(#crown-gradient-bright)",
-                          "url(#crown-gradient)"
-                        ]
+                          "url(#crown-gradient)",
+                        ],
                       }}
                       transition={{
                         duration: 3,
                         repeat: Infinity,
-                        ease: "easeInOut"
+                        ease: "easeInOut",
                       }}
                     />
-                    
+
                     {/* Crown Jewels - Animated Sparkles */}
                     <motion.circle
                       cx="15"
@@ -289,12 +306,12 @@ const AdminLogin = () => {
                       fill="#fff"
                       animate={{
                         opacity: [0, 1, 0],
-                        scale: [0.5, 1.2, 0.5]
+                        scale: [0.5, 1.2, 0.5],
                       }}
                       transition={{
                         duration: 2,
                         repeat: Infinity,
-                        ease: "easeInOut"
+                        ease: "easeInOut",
                       }}
                     />
                     <motion.circle
@@ -304,13 +321,13 @@ const AdminLogin = () => {
                       fill="#fff"
                       animate={{
                         opacity: [0, 1, 0],
-                        scale: [0.5, 1.3, 0.5]
+                        scale: [0.5, 1.3, 0.5],
                       }}
                       transition={{
                         duration: 2,
                         repeat: Infinity,
                         ease: "easeInOut",
-                        delay: 0.5
+                        delay: 0.5,
                       }}
                     />
                     <motion.circle
@@ -320,25 +337,37 @@ const AdminLogin = () => {
                       fill="#fff"
                       animate={{
                         opacity: [0, 1, 0],
-                        scale: [0.5, 1.2, 0.5]
+                        scale: [0.5, 1.2, 0.5],
                       }}
                       transition={{
                         duration: 2,
                         repeat: Infinity,
                         ease: "easeInOut",
-                        delay: 1
+                        delay: 1,
                       }}
                     />
                   </motion.g>
 
                   {/* Enhanced Gradients */}
                   <defs>
-                    <linearGradient id="crown-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient
+                      id="crown-gradient"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
                       <stop offset="0%" stopColor="#ffd700" />
                       <stop offset="50%" stopColor="#ffed4a" />
                       <stop offset="100%" stopColor="#f59e0b" />
                     </linearGradient>
-                    <linearGradient id="crown-gradient-bright" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient
+                      id="crown-gradient-bright"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
                       <stop offset="0%" stopColor="#fff59d" />
                       <stop offset="50%" stopColor="#ffd700" />
                       <stop offset="100%" stopColor="#fbbf24" />
@@ -348,7 +377,7 @@ const AdminLogin = () => {
               </div>
 
               {/* Animated Ring Pulses */}
-              <motion.div 
+              <motion.div
                 className="absolute inset-0 border-2 border-white/20 rounded-full"
                 animate={{
                   scale: [1, 1.2, 1],
@@ -356,148 +385,224 @@ const AdminLogin = () => {
                   borderColor: [
                     "rgba(255,255,255,0.2)",
                     "rgba(255,192,203,0.4)",
-                    "rgba(255,255,255,0.2)"
-                  ]
+                    "rgba(255,255,255,0.2)",
+                  ],
                 }}
                 transition={{
                   duration: 3,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
                 }}
               />
-              
-              <motion.div 
+
+              <motion.div
                 className="absolute inset-0 border border-pink-300/30 rounded-full"
                 animate={{
                   scale: [1, 1.4, 1],
-                  opacity: [0.3, 0, 0.3]
+                  opacity: [0.3, 0, 0.3],
                 }}
                 transition={{
                   duration: 4,
                   repeat: Infinity,
                   ease: "easeInOut",
-                  delay: 1
+                  delay: 1,
                 }}
               />
 
               {/* Enhanced Glow Effect */}
-              <motion.div 
+              <motion.div
                 className="absolute inset-0 bg-gradient-to-br from-pink-400/30 to-purple-600/30 rounded-full blur-lg"
                 animate={{
                   scale: [1, 1.1, 1],
-                  opacity: [0.3, 0.6, 0.3]
+                  opacity: [0.3, 0.6, 0.3],
                 }}
                 transition={{
                   duration: 2.5,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
                 }}
               />
             </motion.div>
-            
+
             <motion.h1
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.8 }}
-              className="text-4xl font-black text-white mb-2 tracking-tight"
+              className="text-3xl font-black text-white mb-1 tracking-tight"
             >
-              <motion.span 
+              <motion.span
                 className="bg-gradient-to-r from-pink-200 via-white to-purple-200 bg-clip-text text-transparent"
                 animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"]
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
                 }}
                 transition={{
                   duration: 4,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
                 }}
                 style={{
-                  backgroundSize: "200% 200%"
+                  backgroundSize: "200% 200%",
                 }}
               >
                 Admin Portal
               </motion.span>
             </motion.h1>
             <motion.p
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.6 }}
-              className="text-white/90 text-lg font-medium"
+              className="text-white/85 text-base font-medium"
             >
               <motion.span
                 animate={{
-                  opacity: [0.9, 1, 0.9]
+                  opacity: [0.9, 1, 0.9],
                 }}
                 transition={{
                   duration: 2,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
                 }}
               >
                 Love Management Dashboard
               </motion.span>
             </motion.p>
-          </div>
+          </motion.div>
 
-          {/* Login Form Card */}
+          {/* Login Form Card - Cinematic Entry */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 shadow-2xl"
+            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ 
+              delay: 1.5, 
+              duration: 1, 
+              ease: "easeOut",
+              type: "spring",
+              stiffness: 120
+            }}
+            className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl"
           >
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl text-red-200 text-sm"
+                className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-200 text-sm"
               >
                 {error}
               </motion.div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
+            <motion.form 
+              onSubmit={handleSubmit} 
+              className="space-y-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2.2, duration: 0.8 }}
+            >
+              {/* Email Field - Cinematic Entry */}
+              <motion.div
+                initial={{ opacity: 0, x: -50, scale: 0.95 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                transition={{ 
+                  delay: 2.5, 
+                  duration: 0.8, 
+                  ease: "easeOut",
+                  type: "spring",
+                  stiffness: 120
+                }}
+              >
+                <motion.label 
+                  className="block text-white/90 text-sm font-medium mb-1.5"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 2.7, duration: 0.6 }}
+                >
                   Email Address
-                </label>
+                </motion.label>
                 <motion.input
-                  whileFocus={{ scale: 1.02 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 2.9, duration: 0.7 }}
+                  whileFocus={{ 
+                    scale: 1.01,
+                    boxShadow: "0 0 20px rgba(236, 72, 153, 0.3)",
+                    borderColor: "rgba(236, 72, 153, 0.8)"
+                  }}
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 transition-all duration-300"
+                  className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400/20 transition-all duration-300 text-sm"
                   placeholder="admin@datingapp.com"
                   required
                 />
-              </div>
+              </motion.div>
 
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
+              {/* Password Field - Cinematic Entry */}
+              <motion.div
+                initial={{ opacity: 0, x: 50, scale: 0.95 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                transition={{ 
+                  delay: 3.2, 
+                  duration: 0.8, 
+                  ease: "easeOut",
+                  type: "spring",
+                  stiffness: 120
+                }}
+              >
+                <motion.label 
+                  className="block text-white/90 text-sm font-medium mb-1.5"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 3.4, duration: 0.6 }}
+                >
                   Password
-                </label>
+                </motion.label>
                 <motion.input
-                  whileFocus={{ scale: 1.02 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 3.6, duration: 0.7 }}
+                  whileFocus={{ 
+                    scale: 1.01,
+                    boxShadow: "0 0 20px rgba(168, 85, 247, 0.3)",
+                    borderColor: "rgba(168, 85, 247, 0.8)"
+                  }}
                   type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 transition-all duration-300"
+                  className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400/20 transition-all duration-300 text-sm"
                   placeholder="Enter your password"
                   required
                 />
-              </div>
+              </motion.div>
 
+              {/* Login Button - Grand Finale */}
               <motion.button
-                whileHover={{ scale: 1.02 }}
+                initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ 
+                  delay: 4.2, 
+                  duration: 1, 
+                  ease: "easeOut",
+                  type: "spring",
+                  stiffness: 140
+                }}
+                whileHover={{ 
+                  scale: 1.02,
+                  boxShadow: "0 10px 30px rgba(236, 72, 153, 0.4)",
+                  background: "linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%)"
+                }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-4 rounded-xl shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden text-sm"
               >
                 {isLoading ? (
-                  <div className="flex items-center justify-center">
+                  <motion.div 
+                    className="flex items-center justify-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{
@@ -508,61 +613,191 @@ const AdminLogin = () => {
                       className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
                     />
                     Signing in...
-                  </div>
+                  </motion.div>
                 ) : (
-                  "Sign In to Dashboard"
+                  <motion.span
+                    initial={{ letterSpacing: "0.1em" }}
+                    animate={{ letterSpacing: "0.05em" }}
+                    transition={{ delay: 4.8, duration: 0.5 }}
+                  >
+                    Sign In to Dashboard
+                  </motion.span>
                 )}
               </motion.button>
-            </form>
+            </motion.form>
 
             {/* Demo Credentials */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-              className="mt-6 p-4 bg-blue-500/10 border border-blue-400/20 rounded-xl"
+          {/* Demo Credentials - Cinematic Entry */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ 
+              delay: 5, 
+              duration: 0.8, 
+              ease: "easeOut",
+              type: "spring",
+              stiffness: 120
+            }}
+            className="mt-4 p-3 bg-blue-500/10 border border-blue-400/20 rounded-lg"
+          >
+            <motion.p 
+              className="text-blue-200 text-xs text-center mb-1 font-medium"
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 5.3, duration: 0.6 }}
             >
-              <p className="text-blue-200 text-sm text-center mb-2 font-medium">
-                Demo Credentials:
-              </p>
-              <p className="text-blue-100 text-xs text-center">
-                Email: admin@datingapp.com
-              </p>
-              <p className="text-blue-100 text-xs text-center">
-                Password: admin123
-              </p>
-            </motion.div>
+              Demo Credentials:
+            </motion.p>
+            <motion.p 
+              className="text-blue-100 text-xs text-center"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 5.6, duration: 0.6 }}
+            >
+              Email: admin@datingapp.com
+            </motion.p>
+            <motion.p 
+              className="text-blue-100 text-xs text-center"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 5.9, duration: 0.6 }}
+            >
+              Password: admin123
+            </motion.p>
+          </motion.div>
 
-            {/* Footer */}
-            <div className="mt-8 text-center">
+          {/* Footer - Cinematic Entry */}
+          <motion.div 
+            className="mt-5 text-center"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 6.2, duration: 0.8 }}
+          >
+            <motion.div
+              whileHover={{ x: -5 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
               <Link
                 to="/"
-                className="text-white/60 hover:text-white text-sm transition-colors duration-300"
+                className="text-white/60 hover:text-white text-xs transition-colors duration-300"
               >
                 ← Back to Main Site
               </Link>
-            </div>
+            </motion.div>
+          </motion.div>
           </motion.div>
 
-          {/* Bottom Stats */}
+          {/* Bottom Stats - Cinematic Grand Finale */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="mt-8 grid grid-cols-3 gap-4 text-center"
+            transition={{ delay: 6.8, duration: 1.2, ease: "easeOut" }}
+            className="mt-6 grid grid-cols-3 gap-3 text-center"
           >
-            <div className="backdrop-blur-md bg-white/5 rounded-2xl p-4">
-              <div className="text-2xl font-bold text-white">10K+</div>
-              <div className="text-white/70 text-sm">Happy Users</div>
-            </div>
-            <div className="backdrop-blur-md bg-white/5 rounded-2xl p-4">
-              <div className="text-2xl font-bold text-white">5K+</div>
-              <div className="text-white/70 text-sm">Matches Made</div>
-            </div>
-            <div className="backdrop-blur-md bg-white/5 rounded-2xl p-4">
-              <div className="text-2xl font-bold text-white">99.9%</div>
-              <div className="text-white/70 text-sm">Uptime</div>
-            </div>
+            <motion.div 
+              className="backdrop-blur-md bg-white/5 rounded-xl p-3"
+              initial={{ opacity: 0, scale: 0.8, rotateY: -90 }}
+              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+              transition={{ 
+                delay: 7.2, 
+                duration: 0.8, 
+                ease: "easeOut",
+                type: "spring",
+                stiffness: 120
+              }}
+              whileHover={{ 
+                scale: 1.05, 
+                y: -5,
+                boxShadow: "0 10px 25px rgba(255,255,255,0.1)"
+              }}
+            >
+              <motion.div 
+                className="text-lg font-bold text-white"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 7.8, duration: 0.5 }}
+              >
+                10K+
+              </motion.div>
+              <motion.div 
+                className="text-white/70 text-xs"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 8, duration: 0.5 }}
+              >
+                Happy Users
+              </motion.div>
+            </motion.div>
+            
+            <motion.div 
+              className="backdrop-blur-md bg-white/5 rounded-xl p-3"
+              initial={{ opacity: 0, scale: 0.8, rotateY: -90 }}
+              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+              transition={{ 
+                delay: 7.6, 
+                duration: 0.8, 
+                ease: "easeOut",
+                type: "spring",
+                stiffness: 120
+              }}
+              whileHover={{ 
+                scale: 1.05, 
+                y: -5,
+                boxShadow: "0 10px 25px rgba(255,255,255,0.1)"
+              }}
+            >
+              <motion.div 
+                className="text-lg font-bold text-white"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 8.2, duration: 0.5 }}
+              >
+                5K+
+              </motion.div>
+              <motion.div 
+                className="text-white/70 text-xs"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 8.4, duration: 0.5 }}
+              >
+                Matches Made
+              </motion.div>
+            </motion.div>
+            
+            <motion.div 
+              className="backdrop-blur-md bg-white/5 rounded-xl p-3"
+              initial={{ opacity: 0, scale: 0.8, rotateY: -90 }}
+              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+              transition={{ 
+                delay: 8, 
+                duration: 0.8, 
+                ease: "easeOut",
+                type: "spring",
+                stiffness: 120
+              }}
+              whileHover={{ 
+                scale: 1.05, 
+                y: -5,
+                boxShadow: "0 10px 25px rgba(255,255,255,0.1)"
+              }}
+            >
+              <motion.div 
+                className="text-lg font-bold text-white"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 8.6, duration: 0.5 }}
+              >
+                99.9%
+              </motion.div>
+              <motion.div 
+                className="text-white/70 text-xs"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 8.8, duration: 0.5 }}
+              >
+                Uptime
+              </motion.div>
+            </motion.div>
           </motion.div>
         </motion.div>
       </div>

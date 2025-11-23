@@ -114,17 +114,22 @@ const AdminDashboard = () => {
           </motion.div>
         </div>
 
-        <motion.div 
+        <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ delay: delay + 0.2, duration: 0.5, type: "spring", bounce: 0.3 }}
+          transition={{
+            delay: delay + 0.2,
+            duration: 0.5,
+            type: "spring",
+            bounce: 0.3,
+          }}
           className="text-white text-3xl font-black mb-3 drop-shadow-2xl"
         >
           {typeof value === "number" ? value.toLocaleString() : value}
         </motion.div>
 
         <div className="flex items-center justify-between">
-          <motion.div 
+          <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: delay + 0.3 }}
@@ -166,11 +171,11 @@ const AdminDashboard = () => {
       >
         {/* Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-purple-100 via-pink-50 to-rose-100 rounded-3xl blur-3xl opacity-50"></div>
-        
+
         <div className="relative bg-white/40 backdrop-blur-lg rounded-3xl p-8 border border-white/60 shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="text-left">
-              <motion.h1 
+              <motion.h1
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
@@ -185,7 +190,7 @@ const AdminDashboard = () => {
                 </motion.span>
                 Admin Dashboard
               </motion.h1>
-              <motion.p 
+              <motion.p
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
@@ -300,9 +305,9 @@ const AdminDashboard = () => {
         >
           {/* Background Elements */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full blur-2xl opacity-30 -translate-y-16 translate-x-16"></div>
-          
+
           <div className="relative z-10">
-            <motion.h3 
+            <motion.h3
               initial={{ y: -10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.8 }}
@@ -321,8 +326,8 @@ const AdminDashboard = () => {
             <div className="space-y-4">
               {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
                 (day, index) => (
-                  <motion.div 
-                    key={day} 
+                  <motion.div
+                    key={day}
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: 0.9 + index * 0.05 }}
@@ -334,8 +339,12 @@ const AdminDashboard = () => {
                     <div className="flex-1 flex space-x-3">
                       <div className="flex-1">
                         <div className="flex items-center justify-between text-sm mb-2">
-                          <span className="text-blue-700 font-semibold">New Users</span>
-                          <span className="font-bold text-slate-700">{45 + index * 7}</span>
+                          <span className="text-blue-700 font-semibold">
+                            New Users
+                          </span>
+                          <span className="font-bold text-slate-700">
+                            {45 + index * 7}
+                          </span>
                         </div>
                         <div className="w-full bg-slate-200/80 rounded-full h-2 overflow-hidden">
                           <motion.div
@@ -345,7 +354,7 @@ const AdminDashboard = () => {
                               delay: 1.2 + index * 0.1,
                               duration: 1,
                               type: "spring",
-                              bounce: 0.3
+                              bounce: 0.3,
                             }}
                             className="bg-gradient-to-r from-blue-500 via-blue-400 to-cyan-400 h-2 rounded-full shadow-lg"
                           />
@@ -353,14 +362,23 @@ const AdminDashboard = () => {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between text-sm mb-2">
-                          <span className="text-pink-700 font-semibold">Matches</span>
-                          <span className="font-bold text-slate-700">{156 + index * 20}</span>
+                          <span className="text-pink-700 font-semibold">
+                            Matches
+                          </span>
+                          <span className="font-bold text-slate-700">
+                            {156 + index * 20}
+                          </span>
                         </div>
                         <div className="w-full bg-slate-200/80 rounded-full h-2 overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${(156 + index * 20) / 3}%` }}
-                            transition={{ delay: 1.4 + index * 0.1, duration: 1, type: "spring", bounce: 0.3 }}
+                            transition={{
+                              delay: 1.4 + index * 0.1,
+                              duration: 1,
+                              type: "spring",
+                              bounce: 0.3,
+                            }}
                             className="bg-gradient-to-r from-pink-500 via-rose-400 to-red-400 h-2 rounded-full shadow-lg"
                           />
                         </div>
@@ -382,9 +400,9 @@ const AdminDashboard = () => {
         >
           {/* Background Elements */}
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-purple-200 to-pink-200 rounded-full blur-2xl opacity-30 translate-y-16 -translate-x-16"></div>
-          
+
           <div className="relative z-10">
-            <motion.h3 
+            <motion.h3
               initial={{ y: -10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.9 }}
@@ -406,7 +424,11 @@ const AdminDashboard = () => {
                   key={activity.id}
                   initial={{ opacity: 0, y: 15, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: 1.0 + index * 0.1, type: "spring", bounce: 0.3 }}
+                  transition={{
+                    delay: 1.0 + index * 0.1,
+                    type: "spring",
+                    bounce: 0.3,
+                  }}
                   whileHover={{ scale: 1.02, y: -2 }}
                   className="flex items-center space-x-4 p-4 hover:bg-white/70 rounded-2xl transition-all duration-300 border border-white/20 backdrop-blur-sm"
                 >
@@ -424,7 +446,9 @@ const AdminDashboard = () => {
                     <div className="font-bold text-slate-800 text-sm">
                       {activity.user}
                     </div>
-                    <div className="text-sm text-slate-600 font-medium">{activity.action}</div>
+                    <div className="text-sm text-slate-600 font-medium">
+                      {activity.action}
+                    </div>
                   </div>
                   <div className="text-xs text-slate-500 font-semibold bg-slate-100/80 px-3 py-1 rounded-full">
                     {activity.time}
@@ -460,7 +484,7 @@ const AdminDashboard = () => {
         <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
 
         <div className="relative z-10">
-          <motion.h3 
+          <motion.h3
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 1.2 }}
@@ -475,7 +499,7 @@ const AdminDashboard = () => {
             </motion.span>
             Quick Actions
           </motion.h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[
               {
@@ -483,45 +507,51 @@ const AdminDashboard = () => {
                 icon: "👤",
                 action: "Manage users",
                 link: "/admin/users",
-                color: "from-blue-400 to-cyan-400"
+                color: "from-blue-400 to-cyan-400",
               },
               {
                 title: "View Analytics",
                 icon: "📊",
                 action: "Deep analytics",
                 link: "/admin/analytics",
-                color: "from-green-400 to-emerald-400"
+                color: "from-green-400 to-emerald-400",
               },
               {
                 title: "Review Reports",
                 icon: "🔍",
                 action: "Check reports",
                 link: "/admin/reports",
-                color: "from-orange-400 to-yellow-400"
+                color: "from-orange-400 to-yellow-400",
               },
               {
                 title: "Subscriptions",
                 icon: "💎",
                 action: "Manage premium",
                 link: "/admin/subscriptions",
-                color: "from-purple-400 to-pink-400"
+                color: "from-purple-400 to-pink-400",
               },
             ].map((action, index) => (
               <motion.button
                 key={action.title}
                 initial={{ scale: 0, rotate: -10 }}
                 animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: 1.3 + index * 0.1, type: "spring", bounce: 0.5 }}
+                transition={{
+                  delay: 1.3 + index * 0.1,
+                  type: "spring",
+                  bounce: 0.5,
+                }}
                 whileHover={{ scale: 1.05, y: -5, rotate: 2 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => (window.location.href = action.link)}
                 className="group relative bg-white/20 backdrop-blur-sm rounded-2xl p-5 text-center hover:bg-white/30 transition-all duration-300 border border-white/30 cursor-pointer overflow-hidden"
               >
                 {/* Hover Effect Background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl`}></div>
-                
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl`}
+                ></div>
+
                 <div className="relative z-10">
-                  <motion.div 
+                  <motion.div
                     whileHover={{ scale: 1.2, rotate: 10 }}
                     className="text-3xl mb-3"
                   >
@@ -546,7 +576,7 @@ const AdminDashboard = () => {
         transition={{ delay: 1.6, duration: 0.8 }}
         className="text-center py-6"
       >
-        <motion.div 
+        <motion.div
           whileHover={{ scale: 1.05 }}
           className="inline-flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-purple-50 text-slate-700 px-6 py-3 rounded-2xl border border-blue-200/50 backdrop-blur-sm shadow-lg"
         >

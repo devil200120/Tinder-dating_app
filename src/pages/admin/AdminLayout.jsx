@@ -108,34 +108,335 @@ const AdminLayout = () => {
         >
           <div className="flex items-center justify-between">
             {isSidebarOpen ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <motion.div
-                  whileHover={{ rotate: 360, scale: 1.1 }}
-                  transition={{ duration: 0.6 }}
-                  className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg"
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 200,
+                    damping: 10,
+                  }}
+                  whileHover={{
+                    scale: 1.1,
+                    rotate: [0, -5, 5, 0],
+                    transition: { duration: 0.5 },
+                  }}
+                  className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600 rounded-xl shadow-xl relative overflow-hidden cursor-pointer"
                 >
-                  💕
+                  {/* Animated Background Pattern */}
+                  <motion.div
+                    className="absolute inset-0"
+                    animate={{
+                      background: [
+                        "linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+                        "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)",
+                        "linear-gradient(225deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+                      ],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    {/* Floating Dots */}
+                    <motion.div
+                      className="absolute top-1 right-1 w-1.5 h-1.5 bg-white/40 rounded-full"
+                      animate={{
+                        scale: [1, 1.3, 1],
+                        opacity: [0.4, 0.8, 0.4],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    />
+                    <motion.div
+                      className="absolute bottom-1 left-1 w-1 h-1 bg-white/30 rounded-full"
+                      animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0.3, 0.7, 0.3],
+                      }}
+                      transition={{
+                        duration: 1.8,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 0.3,
+                      }}
+                    />
+                  </motion.div>
+
+                  {/* Main Logo Icon */}
+                  <div className="relative z-10 flex items-center justify-center">
+                    <motion.svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 40 40"
+                      fill="none"
+                      className="text-white drop-shadow-lg"
+                      animate={{
+                        y: [0, -1, 0],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      {/* Heart Shape */}
+                      <motion.path
+                        d="M20 35C20 35 3.5 23.5 3.5 14C3.5 9 7.5 5 12.5 5C15.5 5 18 6.5 20 9C22 6.5 24.5 5 27.5 5C32.5 5 36.5 9 36.5 14C36.5 23.5 20 35 20 35Z"
+                        fill="currentColor"
+                        animate={{
+                          scale: [1, 1.02, 1],
+                        }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      />
+
+                      {/* Admin Crown */}
+                      <motion.g
+                        animate={{
+                          y: [0, -0.5, 0],
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      >
+                        <motion.path
+                          d="M12 8L15 12L20 6L25 12L28 8L26 15H14L12 8Z"
+                          fill="url(#crown-gradient-small)"
+                          stroke="white"
+                          strokeWidth="0.8"
+                          animate={{
+                            fill: [
+                              "url(#crown-gradient-small)",
+                              "url(#crown-gradient-bright-small)",
+                              "url(#crown-gradient-small)",
+                            ],
+                          }}
+                          transition={{
+                            duration: 2.5,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }}
+                        />
+
+                        {/* Crown Jewels */}
+                        <motion.circle
+                          cx="20"
+                          cy="8"
+                          r="0.6"
+                          fill="#fff"
+                          animate={{
+                            opacity: [0, 1, 0],
+                            scale: [0.5, 1.2, 0.5],
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }}
+                        />
+                      </motion.g>
+
+                      <defs>
+                        <linearGradient
+                          id="crown-gradient-small"
+                          x1="0%"
+                          y1="0%"
+                          x2="100%"
+                          y2="100%"
+                        >
+                          <stop offset="0%" stopColor="#ffd700" />
+                          <stop offset="50%" stopColor="#ffed4a" />
+                          <stop offset="100%" stopColor="#f59e0b" />
+                        </linearGradient>
+                        <linearGradient
+                          id="crown-gradient-bright-small"
+                          x1="0%"
+                          y1="0%"
+                          x2="100%"
+                          y2="100%"
+                        >
+                          <stop offset="0%" stopColor="#fff59d" />
+                          <stop offset="50%" stopColor="#ffd700" />
+                          <stop offset="100%" stopColor="#fbbf24" />
+                        </linearGradient>
+                      </defs>
+                    </motion.svg>
+                  </div>
+
+                  {/* Glow Effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-br from-pink-400/30 to-purple-600/30 rounded-xl blur-sm"
+                    animate={{
+                      opacity: [0.3, 0.5, 0.3],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   className="text-left"
                 >
-                  <h1 className="text-lg font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+                  <motion.h1
+                    className="text-lg font-black bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent"
+                    animate={{
+                      backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    style={{
+                      backgroundSize: "200% 200%",
+                    }}
+                  >
                     LoveAdmin Pro
-                  </h1>
-                  <p className="text-gray-500 text-xs font-medium">
+                  </motion.h1>
+                  <motion.p
+                    className="text-gray-500 text-xs font-medium"
+                    animate={{
+                      opacity: [0.7, 1, 0.7],
+                    }}
+                    transition={{
+                      duration: 2.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
                     Dating Control Center
-                  </p>
+                  </motion.p>
                 </motion.div>
               </div>
             ) : (
               <motion.div
-                whileHover={{ rotate: 360, scale: 1.1 }}
-                transition={{ duration: 0.6 }}
-                className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-base shadow-lg mx-auto"
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 10,
+                }}
+                whileHover={{
+                  scale: 1.15,
+                  rotate: [0, -8, 8, 0],
+                  transition: { duration: 0.6 },
+                }}
+                className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600 rounded-xl shadow-xl relative overflow-hidden cursor-pointer mx-auto"
               >
-                💕
+                {/* Animated Background */}
+                <motion.div
+                  className="absolute inset-0 bg-white/10"
+                  animate={{
+                    background: [
+                      "linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+                      "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)",
+                      "linear-gradient(225deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+                    ],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+
+                {/* Compact Logo */}
+                <div className="relative z-10">
+                  <motion.svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 40 40"
+                    fill="none"
+                    className="text-white drop-shadow-lg"
+                    animate={{
+                      y: [0, -1, 0],
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                      duration: 2.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    {/* Heart Shape */}
+                    <path
+                      d="M20 35C20 35 3.5 23.5 3.5 14C3.5 9 7.5 5 12.5 5C15.5 5 18 6.5 20 9C22 6.5 24.5 5 27.5 5C32.5 5 36.5 9 36.5 14C36.5 23.5 20 35 20 35Z"
+                      fill="currentColor"
+                    />
+
+                    {/* Crown */}
+                    <motion.path
+                      d="M12 8L15 12L20 6L25 12L28 8L26 15H14L12 8Z"
+                      fill="url(#crown-gradient-compact)"
+                      stroke="white"
+                      strokeWidth="0.8"
+                      animate={{
+                        fill: [
+                          "url(#crown-gradient-compact)",
+                          "url(#crown-gradient-bright-compact)",
+                          "url(#crown-gradient-compact)",
+                        ],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    />
+
+                    <defs>
+                      <linearGradient
+                        id="crown-gradient-compact"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="100%"
+                      >
+                        <stop offset="0%" stopColor="#ffd700" />
+                        <stop offset="100%" stopColor="#f59e0b" />
+                      </linearGradient>
+                      <linearGradient
+                        id="crown-gradient-bright-compact"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="100%"
+                      >
+                        <stop offset="0%" stopColor="#fff59d" />
+                        <stop offset="100%" stopColor="#fbbf24" />
+                      </linearGradient>
+                    </defs>
+                  </motion.svg>
+                </div>
+
+                {/* Glow Effect */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-pink-400/40 to-purple-600/40 rounded-xl blur-sm"
+                  animate={{
+                    opacity: [0.4, 0.6, 0.4],
+                  }}
+                  transition={{
+                    duration: 1.8,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
               </motion.div>
             )}
 
