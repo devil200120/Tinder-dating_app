@@ -52,7 +52,6 @@ const Discover = () => {
 
   const showMatchNotification = (user) => {
     // In a real app, this would show a match modal
-    console.log(`It's a match with ${user.name}!`);
     alert(`🎉 It's a match with ${user.name}!`);
   };
 

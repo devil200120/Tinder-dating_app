@@ -40,18 +40,11 @@ const Home = () => {
             // Force a reflow to ensure the animation triggers
             entry.target.offsetHeight; // Force reflow
             entry.target.classList.add("animate-in");
-            console.log("Observer triggered for:", entry.target.className);
-            
-            // Additional debugging
-            const computedStyle = window.getComputedStyle(entry.target);
-            console.log("Element opacity:", computedStyle.opacity);
-            console.log("Element transform:", computedStyle.transform);
           }
         } else {
           // Remove animate-in when element goes out of view to allow re-animation
           if (entry.target.classList.contains("animate-in")) {
             entry.target.classList.remove("animate-in");
-            console.log("Element exited view, removing animation:", entry.target.className);
           }
         }
       });
@@ -68,9 +61,7 @@ const Home = () => {
       const animatedElements = document.querySelectorAll(
         ".scroll-animate, .scroll-animate-left, .scroll-animate-right, .scroll-animate-up, .scroll-animate-fade, .scroll-animate-scale"
       );
-      
-      console.log("Found animated elements:", animatedElements.length);
-      
+
       animatedElements.forEach((element) => {
         // Remove any existing animate-in class first to reset animation state
         element.classList.remove("animate-in");
@@ -83,35 +74,35 @@ const Home = () => {
       const animatedElements = document.querySelectorAll(
         ".scroll-animate, .scroll-animate-left, .scroll-animate-right, .scroll-animate-up, .scroll-animate-fade, .scroll-animate-scale"
       );
-      
+
       animatedElements.forEach((element) => {
         const rect = element.getBoundingClientRect();
-        const isInViewport = rect.top < window.innerHeight * 0.85 && rect.bottom > window.innerHeight * 0.15;
-        
+        const isInViewport =
+          rect.top < window.innerHeight * 0.85 &&
+          rect.bottom > window.innerHeight * 0.15;
+
         if (isInViewport && !element.classList.contains("animate-in")) {
           // Force a small delay to ensure CSS is ready
           requestAnimationFrame(() => {
             element.offsetHeight; // Force reflow
             element.classList.add("animate-in");
-            console.log("Manual animation triggered for:", element.className.split(' ').filter(c => c.includes('scroll-animate')));
           });
         } else if (!isInViewport && element.classList.contains("animate-in")) {
           // Reset animation when element goes out of view
           element.classList.remove("animate-in");
-          console.log("Manual animation reset for:", element.className.split(' ').filter(c => c.includes('scroll-animate')));
         }
       });
     };
 
     // Initial setup
     setupObserver();
-    
+
     // Check visibility immediately after setup
     setTimeout(checkVisibleElements, 100);
-    
+
     // Also check again after a longer delay for any late-loading content
     setTimeout(checkVisibleElements, 1000);
-    
+
     // Simplified scroll handling - single event listener with proper throttling
     let scrollTimeout = null;
     let isScrolling = false;
@@ -133,13 +124,13 @@ const Home = () => {
         isScrolling = false;
       }, 100);
     };
-    
+
     // Add single scroll event listener
-    window.addEventListener('scroll', handleScrollEvents, { passive: true });
+    window.addEventListener("scroll", handleScrollEvents, { passive: true });
 
     return () => {
       observer.disconnect();
-      window.removeEventListener('scroll', handleScrollEvents);
+      window.removeEventListener("scroll", handleScrollEvents);
       if (scrollTimeout) {
         clearTimeout(scrollTimeout);
       }
@@ -1602,11 +1593,21 @@ const Home = () => {
             ))}
           </div>
 
-          <div className="border-t border-white/10 pt-8 text-center">
-            <p className="text-gray-400">
-              &copy; 2025 LoveConnect. Made with 💖 for finding love. All rights
-              reserved.
-            </p>
+          <div className="border-t border-white/10 pt-8">
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <p className="text-gray-400">
+                &copy; 2025 LoveConnect. Made with 💖 for finding love. All
+                rights reserved.
+              </p>
+              <div className="mt-4 md:mt-0">
+                <Link
+                  to="/admin/login"
+                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                >
+                  Admin Portal
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </footer>

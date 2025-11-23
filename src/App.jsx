@@ -6,12 +6,14 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { AdminProvider } from "./context/AdminContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { ChatProvider } from "./context/ChatContext";
 import { useAuth } from "./hooks/useAuth";
 
 // Components
 import Navbar from "./components/Navbar";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
 
 // Pages
 import Home from "./pages/Home";
@@ -24,6 +26,17 @@ import Chats from "./pages/Chats";
 import ChatRoom from "./pages/ChatRoom";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+
+// Admin Pages
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import Analytics from "./pages/admin/Analytics";
+import UserManagement from "./pages/admin/UserManagement";
+import ReportsManagement from "./pages/admin/ReportsManagement";
+import SubscriptionManagement from "./pages/admin/SubscriptionManagement";
+import MessageMonitoring from "./pages/admin/MessageMonitoring";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -186,6 +199,68 @@ const AppRouter = () => {
         {/* Default Route */}
         <Route path="/app" element={<Navigate to="/discover" replace />} />
 
+        {/* Admin Routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin"
+          element={
+            <AdminProtectedRoute>
+              <AdminLayout />
+            </AdminProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route
+            path="users"
+            element={
+              <AdminProtectedRoute requiredPermission="users">
+                <UserManagement />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="reports"
+            element={
+              <AdminProtectedRoute requiredPermission="reports">
+                <ReportsManagement />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="subscriptions"
+            element={
+              <AdminProtectedRoute requiredPermission="subscriptions">
+                <SubscriptionManagement />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="analytics"
+            element={
+              <AdminProtectedRoute requiredPermission="analytics">
+                <Analytics />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="messages"
+            element={
+              <AdminProtectedRoute requiredPermission="content">
+                <MessageMonitoring />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <AdminProtectedRoute requiredRole="super_admin">
+                <AdminSettings />
+              </AdminProtectedRoute>
+            }
+          />
+        </Route>
+
         {/* 404 Route */}
         <Route
           path="*"
@@ -213,13 +288,15 @@ const AppRouter = () => {
 // Main App Component
 function App() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <ChatProvider>
-          <AppRouter />
-        </ChatProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <AdminProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <ChatProvider>
+            <AppRouter />
+          </ChatProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </AdminProvider>
   );
 }
 

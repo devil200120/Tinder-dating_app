@@ -35,12 +35,10 @@ export const SocketProvider = ({ children }) => {
 
       // Connection events
       newSocket.on("connect", () => {
-        console.log("Connected to server");
         setIsConnected(true);
       });
 
       newSocket.on("disconnect", () => {
-        console.log("Disconnected from server");
         setIsConnected(false);
       });
 
