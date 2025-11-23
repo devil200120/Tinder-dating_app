@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import MobileMenu from "../components/MobileMenu";
+import SubscriptionPlans from "../components/SubscriptionPlans";
 
 const Home = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -28,14 +29,30 @@ const Home = () => {
   // Intersection Observer for scroll animations
   useEffect(() => {
     const observerOptions = {
-      threshold: 0.1,
-      rootMargin: "0px 0px -10% 0px",
+      threshold: [0.1, 0.3], // Multiple thresholds for better detection
+      rootMargin: "0px 0px -5% 0px", // Smaller margin for earlier trigger
     };
 
     const observerCallback = (entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("animate-in");
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.1) {
+          if (!entry.target.classList.contains("animate-in")) {
+            // Force a reflow to ensure the animation triggers
+            entry.target.offsetHeight; // Force reflow
+            entry.target.classList.add("animate-in");
+            console.log("Observer triggered for:", entry.target.className);
+            
+            // Additional debugging
+            const computedStyle = window.getComputedStyle(entry.target);
+            console.log("Element opacity:", computedStyle.opacity);
+            console.log("Element transform:", computedStyle.transform);
+          }
+        } else {
+          // Remove animate-in when element goes out of view to allow re-animation
+          if (entry.target.classList.contains("animate-in")) {
+            entry.target.classList.remove("animate-in");
+            console.log("Element exited view, removing animation:", entry.target.className);
+          }
         }
       });
     };
@@ -45,13 +62,88 @@ const Home = () => {
       observerOptions
     );
 
-    // Observe all elements with scroll animation classes
-    const animatedElements = document.querySelectorAll(
-      ".scroll-animate, .scroll-animate-left, .scroll-animate-right, .scroll-animate-up, .scroll-animate-fade, .scroll-animate-scale"
-    );
-    animatedElements.forEach((element) => observer.observe(element));
+    // Function to set up observer
+    const setupObserver = () => {
+      // Observe all elements with scroll animation classes
+      const animatedElements = document.querySelectorAll(
+        ".scroll-animate, .scroll-animate-left, .scroll-animate-right, .scroll-animate-up, .scroll-animate-fade, .scroll-animate-scale"
+      );
+      
+      console.log("Found animated elements:", animatedElements.length);
+      
+      animatedElements.forEach((element) => {
+        // Remove any existing animate-in class first to reset animation state
+        element.classList.remove("animate-in");
+        observer.observe(element);
+      });
+    };
 
-    return () => observer.disconnect();
+    // Enhanced manual check for elements that should be visible
+    const checkVisibleElements = () => {
+      const animatedElements = document.querySelectorAll(
+        ".scroll-animate, .scroll-animate-left, .scroll-animate-right, .scroll-animate-up, .scroll-animate-fade, .scroll-animate-scale"
+      );
+      
+      animatedElements.forEach((element) => {
+        const rect = element.getBoundingClientRect();
+        const isInViewport = rect.top < window.innerHeight * 0.85 && rect.bottom > window.innerHeight * 0.15;
+        
+        if (isInViewport && !element.classList.contains("animate-in")) {
+          // Force a small delay to ensure CSS is ready
+          requestAnimationFrame(() => {
+            element.offsetHeight; // Force reflow
+            element.classList.add("animate-in");
+            console.log("Manual animation triggered for:", element.className.split(' ').filter(c => c.includes('scroll-animate')));
+          });
+        } else if (!isInViewport && element.classList.contains("animate-in")) {
+          // Reset animation when element goes out of view
+          element.classList.remove("animate-in");
+          console.log("Manual animation reset for:", element.className.split(' ').filter(c => c.includes('scroll-animate')));
+        }
+      });
+    };
+
+    // Initial setup
+    setupObserver();
+    
+    // Check visibility immediately after setup
+    setTimeout(checkVisibleElements, 100);
+    
+    // Also check again after a longer delay for any late-loading content
+    setTimeout(checkVisibleElements, 1000);
+    
+    // Simplified scroll handling - single event listener with proper throttling
+    let scrollTimeout = null;
+    let isScrolling = false;
+
+    const handleScrollEvents = () => {
+      // Clear any existing timeout
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+
+      // Mark that we're scrolling
+      if (!isScrolling) {
+        isScrolling = true;
+      }
+
+      // Throttled check during scrolling
+      scrollTimeout = setTimeout(() => {
+        checkVisibleElements();
+        isScrolling = false;
+      }, 100);
+    };
+    
+    // Add single scroll event listener
+    window.addEventListener('scroll', handleScrollEvents, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('scroll', handleScrollEvents);
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+    };
   }, []);
 
   // More dynamic and diverse images
@@ -798,6 +890,11 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Subscription Plans Section */}
+      <section id="subscription" className="relative">
+        <SubscriptionPlans />
+      </section>
+
       {/* Live Statistics Section - Enhanced */}
       <section className="relative py-12 md:py-16 overflow-hidden">
         {/* Animated Background */}
@@ -1438,411 +1535,6 @@ const Home = () => {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Revolutionary How It Works - Diagonal Split Design */}
-      <section className="relative py-12 md:py-16 overflow-hidden bg-gradient-to-br from-purple-900 via-indigo-900 to-pink-900">
-        {/* Diagonal Background Split */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/30 to-transparent transform skew-y-3 origin-top-left"></div>
-          <div className="absolute inset-0 bg-gradient-to-l from-pink-600/30 to-transparent transform -skew-y-3 origin-top-right"></div>
-
-          {/* Floating Geometric Shapes */}
-          <div
-            className="absolute top-10 left-10 w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-20 animate-bounce"
-            style={{ animationDuration: "3s" }}
-          ></div>
-          <div className="absolute top-20 right-16 w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-500 rotate-45 opacity-20 animate-pulse"></div>
-          <div
-            className="absolute bottom-16 left-20 w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full opacity-20 animate-spin"
-            style={{ animationDuration: "8s" }}
-          ></div>
-          <div
-            className="absolute bottom-10 right-10 w-8 h-8 bg-gradient-to-br from-pink-400 to-purple-500 rotate-12 opacity-20 animate-bounce"
-            style={{ animationDuration: "4s" }}
-          ></div>
-        </div>
-
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Spectacular Header */}
-          <div className="text-center mb-12">
-            <div className="relative inline-block">
-              <div className="absolute -inset-2 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-full opacity-30 blur-lg animate-pulse"></div>
-              <div className="relative bg-black/50 backdrop-blur-xl rounded-full px-6 py-2 border border-white/20">
-                <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-spin"></div>
-                  <span className="text-white font-bold text-sm">
-                    The Magic Process
-                  </span>
-                  <div className="w-4 h-4 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full animate-pulse"></div>
-                </div>
-              </div>
-            </div>
-
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mt-6 mb-4">
-              <span className="block text-white drop-shadow-lg">How Love</span>
-              <span className="block bg-gradient-to-r from-pink-400 via-purple-400 via-cyan-400 to-green-400 bg-clip-text text-transparent">
-                Actually Happens ✨
-              </span>
-            </h2>
-          </div>
-
-          {/* Ultra-Dynamic Cards */}
-          <div className="grid lg:grid-cols-3 gap-6 relative">
-            {[
-              {
-                step: "01",
-                title: "Build Your Universe",
-                subtitle: "Create Magic",
-                description:
-                  "Design a profile that captures your soul. Our AI doesn't just read - it understands your essence.",
-                image:
-                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&auto=format",
-                icon: "🌟",
-                bgGradient: "from-pink-500 via-rose-500 to-red-500",
-                glowColor: "pink",
-                transform: "hover:rotate-3 hover:scale-105",
-              },
-              {
-                step: "02",
-                title: "AI Cupid Strikes",
-                subtitle: "Feel The Spark",
-                description:
-                  "Watch as our quantum algorithms find your cosmic match. It's not just compatibility - it's destiny.",
-                image:
-                  "https://images.unsplash.com/photo-1522037576655-7a93ce0f4d10?w=400&h=300&fit=crop&auto=format",
-                icon: "💫",
-                bgGradient: "from-purple-500 via-indigo-500 to-blue-500",
-                glowColor: "purple",
-                transform: "hover:-rotate-3 hover:scale-105",
-              },
-              {
-                step: "03",
-                title: "Love Conversations",
-                subtitle: "Hearts Connect",
-                description:
-                  "Engage in conversations that matter. Video dates, voice notes, and moments that become memories.",
-                image:
-                  "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=400&h=300&fit=crop&auto=format",
-                icon: "💖",
-                bgGradient: "from-cyan-500 via-teal-500 to-green-500",
-                glowColor: "cyan",
-                transform: "hover:rotate-3 hover:scale-105",
-              },
-            ].map((step, index) => (
-              <div key={index} className="group relative">
-                {/* Outer Glow Effect */}
-                <div
-                  className={`absolute -inset-2 bg-gradient-to-r ${step.bgGradient} rounded-2xl opacity-0 group-hover:opacity-30 blur-lg transition-all duration-700`}
-                ></div>
-
-                {/* Main Card */}
-                <div
-                  className={`relative bg-black/40 backdrop-blur-2xl rounded-2xl border border-white/20 overflow-hidden ${step.transform} transition-all duration-700 group-hover:border-white/40`}
-                >
-                  {/* Step Number Badge */}
-                  <div className="absolute top-4 right-4 z-20">
-                    <div
-                      className={`w-10 h-10 bg-gradient-to-br ${step.bgGradient} rounded-xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-500`}
-                    >
-                      <span className="text-sm font-bold text-white">
-                        {step.step}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Floating Icon */}
-                  <div className="absolute top-4 left-4 z-20">
-                    <div className="text-2xl group-hover:scale-125 group-hover:animate-bounce transition-all duration-500">
-                      {step.icon}
-                    </div>
-                  </div>
-
-                  {/* Hero Image with Parallax */}
-                  <div className="relative h-40 overflow-hidden">
-                    <img
-                      src={step.image}
-                      alt={step.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-                    />
-                    <div
-                      className={`absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent group-hover:from-black/80 transition-all duration-500`}
-                    ></div>
-
-                    {/* Floating Particles */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      {[...Array(4)].map((_, i) => (
-                        <div
-                          key={i}
-                          className={`absolute w-1 h-1 bg-white rounded-full animate-ping`}
-                          style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            animationDelay: `${i * 0.2}s`,
-                            animationDuration: "2s",
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-5 relative z-10">
-                    <div className="mb-3">
-                      <div
-                        className={`text-xs font-bold tracking-wider uppercase bg-gradient-to-r ${step.bgGradient} bg-clip-text text-transparent mb-1`}
-                      >
-                        {step.subtitle}
-                      </div>
-                      <h3
-                        className="text-lg font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text transition-all duration-500"
-                        style={{
-                          backgroundImage: `linear-gradient(135deg, ${
-                            step.bgGradient.split(" ")[1]
-                          }, ${step.bgGradient.split(" ")[5]})`,
-                        }}
-                      >
-                        {step.title}
-                      </h3>
-                    </div>
-                    <p className="text-sm text-gray-300 leading-relaxed group-hover:text-white transition-colors duration-500 mb-3">
-                      {step.description}
-                    </p>
-
-                    {/* Interactive Arrow */}
-                    <div className="flex items-center space-x-2 text-white/70 group-hover:text-white transition-colors">
-                      <span className="text-xs font-semibold">
-                        Discover More
-                      </span>
-                      <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-300" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Connecting Lines Between Cards */}
-                {index < 2 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-3 z-10">
-                    <div className="w-6 h-0.5 bg-gradient-to-r from-white/50 to-transparent"></div>
-                    <div className="absolute top-1/2 right-0 w-1.5 h-1.5 bg-white/50 rounded-full transform -translate-y-1/2 animate-pulse"></div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Mind-Blowing Mobile App Section - Floating Phone Cinema */}
-      <section className="relative py-24 md:py-32 overflow-hidden">
-        {/* Dynamic Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
-          {/* Animated Grid */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="grid grid-cols-8 grid-rows-8 h-full">
-              {[...Array(64)].map((_, i) => (
-                <div
-                  key={i}
-                  className="border border-white/20 animate-pulse"
-                  style={{
-                    animationDelay: `${i * 0.1}s`,
-                    animationDuration: "3s",
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Floating Orbs */}
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-32 h-32 bg-gradient-to-br from-pink-400/20 to-purple-600/20 rounded-full blur-xl animate-float"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${i * 1}s`,
-                animationDuration: `${4 + i}s`,
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left Content - Spectacular Text */}
-            <div className="text-center lg:text-left relative z-10">
-              {/* Animated Badge */}
-              <div className="relative inline-block mb-8">
-                <div className="absolute -inset-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full opacity-50 blur-lg animate-pulse"></div>
-                <div className="relative bg-black/60 backdrop-blur-xl rounded-full px-6 py-3 border border-white/30">
-                  <div className="flex items-center space-x-3">
-                    <Download className="w-5 h-5 text-indigo-400 animate-bounce" />
-                    <span className="text-white font-semibold">
-                      Available Everywhere
-                    </span>
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
-                  </div>
-                </div>
-              </div>
-
-              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black mb-8 leading-tight">
-                <span className="block text-white drop-shadow-2xl">
-                  Love In
-                </span>
-                <span className="block bg-gradient-to-r from-indigo-400 via-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent">
-                  Your Pocket 📱
-                </span>
-              </h2>
-
-              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                Experience the future of dating with our revolutionary mobile
-                app.
-                <span className="text-pink-400 font-bold">
-                  {" "}
-                  Swipe, match, and fall in love
-                </span>{" "}
-                with the most advanced dating technology ever created.
-              </p>
-
-              {/* Spectacular Download Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                <button className="group relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-8 py-5 rounded-2xl font-bold text-lg transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/50 transform hover:scale-105">
-                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative flex items-center justify-center space-x-3">
-                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                      <span className="text-lg">📱</span>
-                    </div>
-                    <div>
-                      <div className="text-sm opacity-80">Download for</div>
-                      <div className="font-black">iOS & Android</div>
-                    </div>
-                  </div>
-                </button>
-
-                <button className="group relative overflow-hidden bg-white/10 backdrop-blur-xl text-white px-8 py-5 rounded-2xl font-bold text-lg border border-white/20 transition-all duration-300 hover:bg-white/20 hover:border-white/40 transform hover:scale-105">
-                  <div className="flex items-center justify-center space-x-3">
-                    <Play className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                    <span>Watch Demo</span>
-                  </div>
-                </button>
-              </div>
-
-              {/* Amazing Stats */}
-              <div className="grid grid-cols-3 gap-6">
-                {[
-                  { number: "4.9★", label: "App Store", icon: "⭐" },
-                  { number: "10M+", label: "Downloads", icon: "📲" },
-                  { number: "#1", label: "Dating App", icon: "🏆" },
-                ].map((stat, index) => (
-                  <div key={index} className="group text-center">
-                    <div className="relative">
-                      <div className="absolute -inset-1 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl opacity-0 group-hover:opacity-50 blur transition-all duration-300"></div>
-                      <div className="relative bg-black/40 backdrop-blur-lg rounded-xl p-4 border border-white/20 group-hover:border-white/40 transition-all duration-300">
-                        <div className="text-2xl mb-1">{stat.icon}</div>
-                        <div className="text-xl font-black text-white">
-                          {stat.number}
-                        </div>
-                        <div className="text-sm text-gray-400">
-                          {stat.label}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right Content - Floating Phone Cinema */}
-            <div className="relative lg:block">
-              <div className="relative flex items-center justify-center h-[600px]">
-                {/* Phone 1 - Main Focus */}
-                <div className="relative transform hover:scale-105 transition-transform duration-700 z-20">
-                  <div className="relative">
-                    <div className="absolute -inset-4 bg-gradient-to-br from-pink-500/50 to-purple-600/50 rounded-[3rem] blur-xl opacity-75 animate-pulse"></div>
-                    <div className="relative w-72 h-[580px] bg-gradient-to-b from-gray-800 to-black rounded-[3rem] p-3 shadow-2xl">
-                      <div className="w-full h-full bg-black rounded-[2.5rem] overflow-hidden relative">
-                        <img
-                          src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=350&h=600&fit=crop&auto=format"
-                          alt="Dating App"
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/20"></div>
-
-                        {/* App UI Elements */}
-                        <div className="absolute bottom-6 left-6 right-6">
-                          <div className="bg-white/10 backdrop-blur-2xl rounded-2xl p-6 border border-white/20">
-                            <div className="flex items-center space-x-4 mb-4">
-                              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full"></div>
-                              <div>
-                                <div className="text-white font-bold">
-                                  Emma, 24
-                                </div>
-                                <div className="text-gray-300 text-sm">
-                                  2 miles away
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex space-x-3">
-                              <div className="flex-1 bg-red-500 rounded-full p-3 text-center">
-                                <span className="text-white text-xl">❌</span>
-                              </div>
-                              <div className="flex-1 bg-green-500 rounded-full p-3 text-center">
-                                <span className="text-white text-xl">💚</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Phone 2 - Background Left */}
-                <div className="absolute left-0 top-12 transform rotate-12 hover:rotate-6 transition-transform duration-700 opacity-80 scale-90">
-                  <div className="w-60 h-[480px] bg-gradient-to-b from-gray-700 to-gray-900 rounded-[2.5rem] p-2 shadow-xl">
-                    <div className="w-full h-full bg-black rounded-[2rem] overflow-hidden">
-                      <img
-                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=500&fit=crop&auto=format"
-                        alt="Dating Chat"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Phone 3 - Background Right */}
-                <div className="absolute right-0 top-20 transform -rotate-12 hover:-rotate-6 transition-transform duration-700 opacity-80 scale-90">
-                  <div className="w-60 h-[480px] bg-gradient-to-b from-gray-700 to-gray-900 rounded-[2.5rem] p-2 shadow-xl">
-                    <div className="w-full h-full bg-black rounded-[2rem] overflow-hidden">
-                      <img
-                        src="https://images.unsplash.com/photo-1522037576655-7a93ce0f4d10?w=300&h=500&fit=crop&auto=format"
-                        alt="Dating Match"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Floating Elements */}
-                <div className="absolute top-10 left-10 animate-bounce">
-                  <div className="bg-gradient-to-r from-pink-500 to-red-500 rounded-xl p-3 shadow-xl">
-                    <span className="text-white font-bold text-sm">
-                      💕 Match!
-                    </span>
-                  </div>
-                </div>
-
-                <div className="absolute bottom-10 right-10 animate-pulse">
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl p-3 shadow-xl">
-                    <span className="text-white font-bold text-sm">
-                      💬 New Message
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>

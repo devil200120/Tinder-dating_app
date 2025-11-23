@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, User, Mail, Lock, Eye, EyeOff, Calendar, ArrowRight } from "lucide-react";
+import {
+  Heart,
+  User,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Calendar,
+  ArrowRight,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const Signup = () => {

@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Heart, 
-  Mail, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  User, 
-  Calendar, 
-  ArrowRight, 
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Heart,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  User,
+  Calendar,
+  ArrowRight,
   Check,
   Sparkles,
   UserCircle,
-  ChevronDown
-} from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { validateEmail, validatePassword } from '../utils/helpers';
+  ChevronDown,
+} from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { validateEmail, validatePassword } from "../utils/helpers";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -24,11 +24,11 @@ const Signup = () => {
   const [animationPhase, setAnimationPhase] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    dateOfBirth: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    dateOfBirth: "",
     agreeToTerms: false,
   });
   const [errors, setErrors] = useState({});
@@ -78,16 +78,16 @@ const Signup = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
@@ -96,15 +96,15 @@ const Signup = () => {
     const newErrors = {};
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
+      newErrors.firstName = "First name is required";
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
+      newErrors.lastName = "Last name is required";
     }
 
     if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
 
     const passwordValidation = validatePassword(formData.password);
@@ -113,16 +113,17 @@ const Signup = () => {
     }
 
     if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth = 'Date of birth is required';
+      newErrors.dateOfBirth = "Date of birth is required";
     } else {
-      const age = new Date().getFullYear() - new Date(formData.dateOfBirth).getFullYear();
+      const age =
+        new Date().getFullYear() - new Date(formData.dateOfBirth).getFullYear();
       if (age < 18) {
-        newErrors.dateOfBirth = 'You must be at least 18 years old';
+        newErrors.dateOfBirth = "You must be at least 18 years old";
       }
     }
 
     if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'Please agree to the terms of service';
+      newErrors.agreeToTerms = "Please agree to the terms of service";
     }
 
     setErrors(newErrors);
@@ -131,7 +132,7 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -139,7 +140,7 @@ const Signup = () => {
     setIsSubmitting(true);
     try {
       await signup(formData);
-      navigate('/profile/setup');
+      navigate("/profile/setup");
     } catch (error) {
       setErrors({ submit: error.message });
     } finally {
@@ -311,11 +312,13 @@ const Signup = () => {
                     onChange={handleInputChange}
                     placeholder="First Name"
                     className={`block w-full pl-12 pr-4 py-3.5 text-gray-900 border rounded-xl text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/10 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
-                      errors.firstName ? 'border-red-300' : 'border-gray-200'
+                      errors.firstName ? "border-red-300" : "border-gray-200"
                     }`}
                   />
                   {errors.firstName && (
-                    <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.firstName}
+                    </p>
                   )}
                 </div>
                 <div className="relative">
@@ -329,11 +332,13 @@ const Signup = () => {
                     onChange={handleInputChange}
                     placeholder="Last Name"
                     className={`block w-full pl-12 pr-4 py-3.5 text-gray-900 border rounded-xl text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/10 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
-                      errors.lastName ? 'border-red-300' : 'border-gray-200'
+                      errors.lastName ? "border-red-300" : "border-gray-200"
                     }`}
                   />
                   {errors.lastName && (
-                    <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.lastName}
+                    </p>
                   )}
                 </div>
               </div>
@@ -357,7 +362,7 @@ const Signup = () => {
                     onChange={handleInputChange}
                     placeholder="Enter your email"
                     className={`block w-full pl-12 pr-4 py-3.5 text-gray-900 border rounded-xl text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/10 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
-                      errors.email ? 'border-red-300' : 'border-gray-200'
+                      errors.email ? "border-red-300" : "border-gray-200"
                     }`}
                   />
                   {errors.email && (
@@ -385,7 +390,7 @@ const Signup = () => {
                     onChange={handleInputChange}
                     placeholder="Create password"
                     className={`block w-full pl-12 pr-12 py-3.5 text-gray-900 border rounded-xl text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/10 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
-                      errors.password ? 'border-red-300' : 'border-gray-200'
+                      errors.password ? "border-red-300" : "border-gray-200"
                     }`}
                   />
                   <button
@@ -400,7 +405,9 @@ const Signup = () => {
                     )}
                   </button>
                   {errors.password && (
-                    <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.password}
+                    </p>
                   )}
                 </div>
               </div>
@@ -423,11 +430,13 @@ const Signup = () => {
                     value={formData.dateOfBirth}
                     onChange={handleInputChange}
                     className={`block w-full pl-12 pr-4 py-3.5 text-gray-900 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/10 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
-                      errors.dateOfBirth ? 'border-red-300' : 'border-gray-200'
+                      errors.dateOfBirth ? "border-red-300" : "border-gray-200"
                     }`}
                   />
                   {errors.dateOfBirth && (
-                    <p className="mt-1 text-xs text-red-600">{errors.dateOfBirth}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.dateOfBirth}
+                    </p>
                   )}
                 </div>
               </div>
@@ -466,7 +475,9 @@ const Signup = () => {
                   </span>
                 </label>
                 {errors.agreeToTerms && (
-                  <p className="mt-1 text-xs text-red-600">{errors.agreeToTerms}</p>
+                  <p className="mt-1 text-xs text-red-600">
+                    {errors.agreeToTerms}
+                  </p>
                 )}
               </div>
 
@@ -484,7 +495,11 @@ const Signup = () => {
                   className="group w-full relative px-6 py-4 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="relative z-10 flex items-center justify-center space-x-2">
-                    <span>{isSubmitting ? 'Creating Account...' : 'Create My Account'}</span>
+                    <span>
+                      {isSubmitting
+                        ? "Creating Account..."
+                        : "Create My Account"}
+                    </span>
                     {!isSubmitting && (
                       <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
                     )}
@@ -492,7 +507,9 @@ const Signup = () => {
                   <div className="absolute inset-0 bg-gradient-to-r from-pink-700 via-purple-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                 </button>
                 {errors.submit && (
-                  <p className="mt-2 text-sm text-red-600 text-center">{errors.submit}</p>
+                  <p className="mt-2 text-sm text-red-600 text-center">
+                    {errors.submit}
+                  </p>
                 )}
               </div>
 
@@ -608,7 +625,9 @@ const Signup = () => {
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-ping" />
                 <div>
-                  <div className="text-white text-xs font-semibold">Someone likes you!</div>
+                  <div className="text-white text-xs font-semibold">
+                    Someone likes you!
+                  </div>
                   <div className="text-white/70 text-xs">1 minute ago</div>
                 </div>
               </div>

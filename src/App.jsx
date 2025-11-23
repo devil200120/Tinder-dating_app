@@ -213,13 +213,13 @@ const AppRouter = () => {
 // Main App Component
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <ThemeProvider>
         <ChatProvider>
           <AppRouter />
         </ChatProvider>
-      </AuthProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

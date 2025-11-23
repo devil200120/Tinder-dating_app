@@ -1,128 +1,139 @@
-import React, { createContext, useState, useEffect } from 'react';
-import { currentUser } from '../utils/mockData';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
+
+export { AuthContext }; // Add named export
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check if user is logged in on mount
+  // Mock user data for demo purposes
   useEffect(() => {
-    const checkAuth = () => {
-      const storedUser = localStorage.getItem('authUser');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-        setIsAuthenticated(true);
+    // Simulate checking for existing authentication
+    const checkAuth = async () => {
+      try {
+        // In a real app, you'd check localStorage, cookies, or make an API call
+        const savedUser = localStorage.getItem("user");
+        if (savedUser) {
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    // Simulate async auth check
-    setTimeout(checkAuth, 500);
+    checkAuth();
   }, []);
 
-  // Login function
   const login = async (email, password) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setLoading(true);
+      // Mock login - replace with actual API call
+      const mockUser = {
+        id: "1",
+        name: "Demo User",
+        email: email,
+        avatar:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+        subscription: "free", // free, premium, gold
+        joinDate: new Date().toISOString(),
+      };
 
-      // Mock validation
-      if (email && password.length >= 8) {
-        const userData = {
-          ...currentUser,
-          email
-        };
-        localStorage.setItem('authUser', JSON.stringify(userData));
-        setUser(userData);
-        setIsAuthenticated(true);
-        return { success: true };
-      } else {
-        return { success: false, error: 'Invalid credentials' };
-      }
+      localStorage.setItem("user", JSON.stringify(mockUser));
+      setUser(mockUser);
+      setIsAuthenticated(true);
+      return { success: true };
     } catch (error) {
-      return { success: false, error: 'Login failed' };
+      console.error("Login failed:", error);
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Signup function
   const signup = async (userData) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
+      setLoading(true);
+      // Mock signup - replace with actual API call
       const newUser = {
-        ...currentUser,
-        ...userData,
-        id: Date.now().toString()
+        id: Date.now().toString(),
+        name: userData.name,
+        email: userData.email,
+        avatar: `https://images.unsplash.com/photo-${Math.floor(
+          Math.random() * 1000000000
+        )}?w=100&h=100&fit=crop`,
+        subscription: "free",
+        joinDate: new Date().toISOString(),
       };
 
-      localStorage.setItem('authUser', JSON.stringify(newUser));
+      localStorage.setItem("user", JSON.stringify(newUser));
       setUser(newUser);
       setIsAuthenticated(true);
       return { success: true };
     } catch (error) {
-      return { success: false, error: 'Signup failed' };
+      console.error("Signup failed:", error);
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Logout function
   const logout = () => {
-    localStorage.removeItem('authUser');
+    localStorage.removeItem("user");
     setUser(null);
     setIsAuthenticated(false);
   };
 
-  // Update user profile
-  const updateProfile = async (updates) => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const updatedUser = {
-        ...user,
-        ...updates
-      };
-
-      localStorage.setItem('authUser', JSON.stringify(updatedUser));
+  const updateSubscription = (planType) => {
+    if (user) {
+      const updatedUser = { ...user, subscription: planType };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Update failed' };
     }
   };
 
-  // Complete onboarding
-  const completeOnboarding = async (onboardingData) => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const updatedUser = {
-        ...user,
-        ...onboardingData,
-        onboardingComplete: true
-      };
-
-      localStorage.setItem('authUser', JSON.stringify(updatedUser));
+  const updateProfile = (profileData) => {
+    if (user) {
+      const updatedUser = { ...user, ...profileData };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Onboarding failed' };
+    }
+  };
+
+  const completeOnboarding = () => {
+    if (user) {
+      const updatedUser = { ...user, onboardingComplete: true };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
     }
   };
 
   const value = {
     user,
-    loading,
     isAuthenticated,
+    loading,
     login,
     signup,
     logout,
+    updateSubscription,
     updateProfile,
-    completeOnboarding
+    completeOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+export default AuthContext; // Keep default export
