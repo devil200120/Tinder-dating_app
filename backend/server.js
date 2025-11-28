@@ -5,6 +5,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
+import path from 'path';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import connectDB from './config/db.js';
@@ -51,14 +52,79 @@ const io = new Server(httpServer, {
 });
 
 // Middleware
-app.use(helmet()); // Security headers
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true
+app.use(helmet({
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      mediaSrc: ["'self'", "blob:", "data:"],
+      connectSrc: ["'self'", "https:"],
+    },
+  },
 }));
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      process.env.CLIENT_URL || 'http://localhost:3000',
+      'http://localhost:3000',
+      'http://localhost:5173', // Vite dev server
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5173'
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all origins for now
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'Content-Type']
+}));
+
 app.use(express.json()); // Body parser
 app.use(express.urlencoded({ extended: true }));
 app.use(compression()); // Compress responses
+
+// Serve static files with proper CORS headers
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static('uploads', {
+  setHeaders: (res, path, stat) => {
+    // Set proper MIME types for audio files
+    if (path.endsWith('.wav')) {
+      res.set('Content-Type', 'audio/wav');
+    } else if (path.endsWith('.mp3')) {
+      res.set('Content-Type', 'audio/mpeg');
+    } else if (path.endsWith('.m4a')) {
+      res.set('Content-Type', 'audio/mp4');
+    } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+      res.set('Content-Type', 'image/jpeg');
+    } else if (path.endsWith('.png')) {
+      res.set('Content-Type', 'image/png');
+    } else if (path.endsWith('.gif')) {
+      res.set('Content-Type', 'image/gif');
+    } else if (path.endsWith('.webp')) {
+      res.set('Content-Type', 'image/webp');
+    }
+    // Allow cross-origin access
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+  }
+}));
 
 // Logging
 if (process.env.NODE_ENV === 'development') {
@@ -74,6 +140,44 @@ app.get('/health', (req, res) => {
     success: true,
     message: 'Server is running',
     timestamp: new Date().toISOString()
+  });
+});
+
+// Handle audio file requests specifically
+app.get('/uploads/messages/:filename', (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(process.cwd(), 'uploads', 'messages', filename);
+  
+  // Set CORS headers
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  
+  // Set content type based on file extension
+  const ext = path.extname(filename).toLowerCase();
+  if (ext === '.wav') {
+    res.set('Content-Type', 'audio/wav');
+  } else if (ext === '.mp3') {
+    res.set('Content-Type', 'audio/mpeg');
+  } else if (ext === '.m4a') {
+    res.set('Content-Type', 'audio/mp4');
+  } else if (ext === '.jpg' || ext === '.jpeg') {
+    res.set('Content-Type', 'image/jpeg');
+  } else if (ext === '.png') {
+    res.set('Content-Type', 'image/png');
+  } else if (ext === '.gif') {
+    res.set('Content-Type', 'image/gif');
+  } else if (ext === '.webp') {
+    res.set('Content-Type', 'image/webp');
+  }
+  
+  // Send file
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error('Error serving file:', err);
+      res.status(404).json({ error: 'File not found' });
+    }
   });
 });
 

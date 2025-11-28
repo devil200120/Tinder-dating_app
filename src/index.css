@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Toast Progress Bar Animation */
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-progress {
+  animation-name: progress;
+}
+
+/* Match Modal Animation */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.4s ease-out;
+}
+
 /* Scroll Animation Classes */
 @layer utilities {
   /* Base scroll animation styles - initially hidden */

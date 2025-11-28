@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Heart, X, Star, RotateCcw } from "lucide-react";
 import UserCard from "../components/UserCard";
-import { mockUsers } from "../utils/mockData";
-import { useChat } from "../hooks/useChat";
-import { shuffleArray } from "../utils/helpers";
+import { useChat } from "../context/ChatContext";
+import { userService } from "../services/userService";
+import { swipeService } from "../services/swipeService";
+import { matchService } from "../services/matchService";
+import { useAuth } from "../context/AuthContext";
 
 const Discover = () => {
   const [users, setUsers] = useState([]);
@@ -11,58 +14,185 @@ const Discover = () => {
   const [swipeDirection, setSwipeDirection] = useState(null);
   const [likedUsers, setLikedUsers] = useState([]);
   const [passedUsers, setPassedUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showMatchModal, setShowMatchModal] = useState(false);
+  const [matchedUser, setMatchedUser] = useState(null);
+  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const { addMatch } = useChat();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Shuffle users for variety
-    setUsers(shuffleArray(mockUsers));
+    fetchDiscoverUsers();
   }, []);
+
+  const fetchDiscoverUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await userService.getDiscoverUsers();
+      console.log("Discover users response:", response);
+      if (response.success && response.data) {
+        setUsers(response.data);
+        setCurrentIndex(0);
+      } else {
+        setError("Failed to load users for discovery");
+      }
+    } catch (error) {
+      console.error("Failed to fetch discover users:", error);
+      setError(error.response?.data?.message || "Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const currentUser = users[currentIndex];
 
-  const handleSwipe = (direction) => {
+  const handleSwipe = async (direction) => {
     if (!currentUser) return;
 
     setSwipeDirection(direction);
 
-    if (direction === "right" || direction === "super") {
-      setLikedUsers([...likedUsers, currentUser.id]);
+    try {
+      // Map direction to API type
+      let type;
+      if (direction === "right") type = "like";
+      else if (direction === "left") type = "dislike";
+      else if (direction === "super") type = "superlike";
 
-      // Simulate match (50% chance)
-      if (Math.random() > 0.5) {
+      // Call swipe API
+      const swipeResponse = await swipeService.swipeUser(
+        currentUser._id || currentUser.id,
+        type
+      );
+
+      if (swipeResponse.success) {
+        if (direction === "right" || direction === "super") {
+          setLikedUsers([...likedUsers, currentUser._id || currentUser.id]);
+
+          // Show like animation
+          setShowLikeAnimation(true);
+          setTimeout(() => setShowLikeAnimation(false), 600);
+
+          // Check if it's a match
+          if (swipeResponse.data && swipeResponse.data.match) {
+            setTimeout(() => {
+              setMatchedUser(currentUser);
+              setShowMatchModal(true);
+              addMatch(currentUser);
+            }, 300);
+          }
+        } else if (direction === "left") {
+          setPassedUsers([...passedUsers, currentUser._id || currentUser.id]);
+        }
+
+        // Move to next user
         setTimeout(() => {
-          showMatchNotification(currentUser);
-          addMatch(currentUser);
+          if (currentIndex < users.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+          } else {
+            // Refetch users when we reach the end
+            fetchDiscoverUsers();
+          }
+          setSwipeDirection(null);
         }, 300);
       }
-    } else if (direction === "left") {
-      setPassedUsers([...passedUsers, currentUser.id]);
-    }
+    } catch (error) {
+      console.error("Swipe failed:", error);
+      setSwipeDirection(null);
 
-    setTimeout(() => {
-      if (currentIndex < users.length - 1) {
-        setCurrentIndex(currentIndex + 1);
+      // Handle specific error cases
+      const errorMessage = error.response?.data?.message || error.message;
+
+      if (
+        errorMessage.includes("already swiped") ||
+        errorMessage.includes("You have already swiped")
+      ) {
+        // User already swiped on this person, just move to next user
+        console.log("User already swiped, moving to next user");
+        setTimeout(() => {
+          if (currentIndex < users.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+          } else {
+            // Refetch users when we reach the end
+            fetchDiscoverUsers();
+          }
+          setSwipeDirection(null);
+        }, 300);
       } else {
-        setCurrentIndex(0);
-        setUsers(shuffleArray(mockUsers));
+        // Show error to user for other types of errors
+        alert("Failed to process swipe. Please try again.");
       }
-      setSwipeDirection(null);
-    }, 300);
-  };
-
-  const showMatchNotification = (user) => {
-    // In a real app, this would show a match modal
-    alert(`🎉 It's a match with ${user.name}!`);
-  };
-
-  const handleRewind = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      setSwipeDirection(null);
     }
   };
 
-  if (!currentUser) {
+  const closeMatchModal = () => {
+    setShowMatchModal(false);
+    setMatchedUser(null);
+  };
+
+  const goToChat = () => {
+    closeMatchModal();
+    // Navigate to chat with the matched user
+    navigate(`/chat/${matchedUser._id || matchedUser.id}`);
+  };
+
+  const handleRewind = async () => {
+    try {
+      const response = await swipeService.undoLastSwipe();
+      if (response.success) {
+        // Move back one user if possible
+        if (currentIndex > 0) {
+          setCurrentIndex(currentIndex - 1);
+          setSwipeDirection(null);
+
+          // Remove from liked/passed arrays if they exist
+          const prevUserId =
+            users[currentIndex - 1]?._id || users[currentIndex - 1]?.id;
+          setLikedUsers((prev) => prev.filter((id) => id !== prevUserId));
+          setPassedUsers((prev) => prev.filter((id) => id !== prevUserId));
+        }
+      }
+    } catch (error) {
+      console.error("Rewind failed:", error);
+      alert("Failed to undo last swipe. Please try again.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">
+            Loading profiles...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-24 h-24 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <X className="w-12 h-12 text-red-500" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Oops! Something went wrong
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+          <button onClick={fetchDiscoverUsers} className="btn-primary">
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (users.length === 0 || currentIndex >= users.length) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -75,15 +205,23 @@ const Discover = () => {
           <p className="text-gray-600 dark:text-gray-400 mb-4">
             Check back later for new matches!
           </p>
-          <button
-            onClick={() => {
-              setCurrentIndex(0);
-              setUsers(shuffleArray(mockUsers));
-            }}
-            className="btn-primary"
-          >
-            Start Over
-          </button>
+          <div className="space-y-3">
+            <button onClick={fetchDiscoverUsers} className="btn-primary w-full">
+              Refresh
+            </button>
+            <button
+              onClick={() => navigate("/who-liked-me")}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-3 rounded-xl font-semibold transition-all"
+            >
+              Who Liked Me 💕
+            </button>
+            <button
+              onClick={() => navigate("/who-i-liked")}
+              className="w-full bg-white/80 dark:bg-dark-800/80 backdrop-blur-sm border border-white/20 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-dark-700 px-4 py-3 rounded-xl font-semibold transition-all"
+            >
+              See Who I Liked 💭
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -123,12 +261,14 @@ const Discover = () => {
 
           {/* Current card */}
           <div className="relative w-full h-full" style={{ zIndex: 2 }}>
-            <UserCard
-              user={currentUser}
-              className={`compact-swipe-card ${
-                swipeDirection === "left" ? "swipe-left" : ""
-              } ${swipeDirection === "right" ? "swipe-right" : ""}`}
-            />
+            {currentUser && (
+              <UserCard
+                user={currentUser}
+                className={`compact-swipe-card ${
+                  swipeDirection === "left" ? "swipe-left" : ""
+                } ${swipeDirection === "right" ? "swipe-right" : ""}`}
+              />
+            )}
           </div>
 
           {/* Swipe Indicators */}
@@ -225,6 +365,69 @@ const Discover = () => {
           </ul>
         </div>
       </div>
+
+      {/* Like Animation Overlay */}
+      {showLikeAnimation && (
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
+          <div className="bg-green-500 text-white px-8 py-4 rounded-full text-2xl font-bold animate-bounce">
+            💚 LIKED!
+          </div>
+        </div>
+      )}
+
+      {/* Match Modal */}
+      {showMatchModal && matchedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center animate-scale-in">
+            <div className="mb-6">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-3xl font-bold text-pink-600 mb-2">
+                It's a Match!
+              </h2>
+              <p className="text-gray-600">
+                You and {matchedUser.name} liked each other
+              </p>
+            </div>
+
+            <div className="flex justify-center mb-6">
+              <div className="flex space-x-4">
+                <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-pink-200">
+                  <img
+                    src={matchedUser.photos?.[0] || "/default-avatar.png"}
+                    alt="Your photo"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex items-center">
+                  <div className="text-pink-500 text-2xl">💕</div>
+                </div>
+                <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-pink-200">
+                  <img
+                    src={matchedUser.photos?.[0] || "/default-avatar.png"}
+                    alt={matchedUser.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={goToChat}
+                className="w-full bg-pink-500 text-white py-3 rounded-full font-semibold hover:bg-pink-600 transition-colors"
+              >
+                Send a Message
+              </button>
+              <button
+                onClick={closeMatchModal}
+                className="w-full bg-gray-100 text-gray-700 py-3 rounded-full font-semibold hover:bg-gray-200 transition-colors"
+              >
+                Keep Swiping
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

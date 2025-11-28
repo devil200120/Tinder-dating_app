@@ -1,5 +1,6 @@
 // controllers/userController.js
 import User from '../models/User.js';
+import Swipe from '../models/Swipe.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary.js';
 
 // @desc    Get user profile
@@ -40,12 +41,15 @@ export const updateProfile = async (req, res) => {
   try {
     const {
       name,
+      age,
+      gender,
       bio,
       occupation,
       education,
       interests,
       genderPreference,
-      preferences
+      preferences,
+      location
     } = req.body;
 
     const user = await User.findById(req.user._id);
@@ -59,11 +63,25 @@ export const updateProfile = async (req, res) => {
 
     // Update fields
     if (name) user.name = name;
+    if (age) user.age = age;
+    if (gender) user.gender = gender;
     if (bio) user.bio = bio;
     if (occupation) user.occupation = occupation;
     if (education) user.education = education;
     if (interests) user.interests = interests;
     if (genderPreference) user.genderPreference = genderPreference;
+    if (location) {
+      if (location.city) user.location.city = location.city;
+      if (location.country) user.location.country = location.country;
+      if (location.address) user.location.address = location.address;
+      if (location.area) user.location.area = location.area;
+      if (location.mainCity) user.location.mainCity = location.mainCity;
+      if (location.state) user.location.state = location.state;
+      if (location.coordinates && Array.isArray(location.coordinates)) {
+        user.location.coordinates = location.coordinates;
+      }
+      if (location.placeId) user.location.placeId = location.placeId;
+    }
     if (preferences) {
       if (preferences.ageRange) user.preferences.ageRange = preferences.ageRange;
       if (preferences.distanceRange) user.preferences.distanceRange = preferences.distanceRange;
@@ -306,13 +324,141 @@ export const deleteAccount = async (req, res) => {
   }
 };
 
-export default {
-  getUserProfile,
-  updateProfile,
-  uploadPhotos,
-  deletePhoto,
-  setPrimaryPhoto,
-  updateLocation,
-  updateStatus,
-  deleteAccount
+// @desc    Get discover users
+// @route   GET /api/users/discover
+// @access  Private
+export const getDiscoverUsers = async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.user._id);
+    
+    if (!currentUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Get users already swiped by current user
+    const alreadySwiped = await Swipe.find({
+      user: req.user._id
+    }).select('swipedUser');
+    
+    const swipedUserIds = alreadySwiped.map(swipe => swipe.swipedUser);
+
+    // Get blocked users (both who current user blocked and who blocked current user)
+    const Block = (await import('../models/Block.js')).default;
+    const blockedUsers = await Block.find({
+      $or: [
+        { blocker: req.user._id, isActive: true },
+        { blocked: req.user._id, isActive: true }
+      ]
+    }).select('blocker blocked');
+    
+    const blockedUserIds = blockedUsers.map(block => 
+      block.blocker.toString() === req.user._id.toString() 
+        ? block.blocked.toString() 
+        : block.blocker.toString()
+    );
+
+    // Get user's preferences
+    const {
+      ageRange = { min: 18, max: 100 },
+      distanceRange = 50,
+      lookingFor
+    } = currentUser.preferences;
+
+    // Build query to find potential matches
+    const query = {
+      _id: { 
+        $ne: req.user._id, // Exclude current user
+        $nin: [...swipedUserIds, ...blockedUserIds] // Exclude swiped and blocked users
+      },
+      age: { $gte: ageRange.min, $lte: ageRange.max }, // Age filter
+      // Add gender preference filtering if needed
+      ...(currentUser.genderPreference?.length > 0 && 
+          !currentUser.genderPreference.includes('everyone') && {
+        gender: { $in: currentUser.genderPreference }
+      })
+    };
+
+    const users = await User.find(query)
+      .select('-password -refreshToken -verification -email')
+      .limit(20) // Limit to 20 users for performance
+      .sort({ createdAt: -1 }); // Show newest users first
+
+    res.status(200).json({
+      success: true,
+      data: users,
+      count: users.length
+    });
+  } catch (error) {
+    console.error('Error fetching discover users:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch users'
+    });
+  }
+};
+
+// @desc    Update user online status
+// @route   PUT /api/users/status
+// @access  Private
+export const updateUserStatus = async (req, res) => {
+  try {
+    const { isOnline } = req.body;
+    
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        'status.isOnline': isOnline,
+        'status.lastSeen': new Date()
+      },
+      { new: true }
+    ).select('_id name status');
+
+    res.status(200).json({
+      success: true,
+      message: 'Status updated successfully',
+      data: { user }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Get user's last seen and online status
+// @route   GET /api/users/:id/status
+// @access  Private
+export const getUserStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const user = await User.findById(id)
+      .select('_id name status')
+      .lean();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        userId: user._id,
+        name: user.name,
+        status: user.status
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 };

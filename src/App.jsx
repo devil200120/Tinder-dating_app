@@ -8,8 +8,16 @@ import {
 import { AuthProvider } from "./context/AuthContext";
 import { AdminProvider } from "./context/AdminContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { SocketProvider } from "./context/SocketContext";
 import { ChatProvider } from "./context/ChatContext";
+import { ToastProvider } from "./context/ToastContext";
+import { NavbarProvider } from "./context/NavbarContext";
 import { useAuth } from "./hooks/useAuth";
+import { useNavbar } from "./context/NavbarContext";
+import { useLastSeen } from "./hooks/useLastSeen";
+import ToastContainer from "./components/ToastContainer";
+import ErrorBoundary from "./components/ErrorBoundary";
+import LastSeenTracker from "./components/LastSeenTracker";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -26,6 +34,9 @@ import Chats from "./pages/Chats";
 import ChatRoom from "./pages/ChatRoom";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import WhoILiked from "./pages/WhoILiked";
+import WhoLikedMe from "./pages/WhoLikedMe";
+import BlockedUsers from "./pages/BlockedUsers";
 
 // Admin Pages
 import AdminLogin from "./pages/admin/AdminLogin";
@@ -57,7 +68,7 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return <LastSeenTracker>{children}</LastSeenTracker>;
 };
 
 // Public Route Component (redirect to discover if already logged in)
@@ -84,10 +95,26 @@ const PublicRoute = ({ children }) => {
 
 // Layout Component
 const Layout = ({ children }) => {
+  const { isNavbarVisible } = useNavbar();
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-950">
-      <Navbar />
-      <main>{children}</main>
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-950 relative overflow-hidden">
+      <div
+        className={`transition-all duration-700 ease-out transform origin-top ${
+          isNavbarVisible
+            ? "translate-y-0 opacity-100 scale-y-100"
+            : "translate-y-0 opacity-0 scale-y-0 pointer-events-none"
+        } absolute top-0 left-0 right-0 z-30`}
+      >
+        <Navbar />
+      </div>
+      <main
+        className={`transition-all duration-700 ease-out ${
+          isNavbarVisible ? "pt-0" : "pt-0"
+        }`}
+      >
+        {children}
+      </main>
     </div>
   );
 };
@@ -156,7 +183,7 @@ const AppRouter = () => {
           }
         />
         <Route
-          path="/chats/:userId"
+          path="/chats/:chatId"
           element={
             <ProtectedRoute>
               <Layout>
@@ -191,6 +218,36 @@ const AppRouter = () => {
             <ProtectedRoute>
               <Layout>
                 <Settings />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/who-i-liked"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <WhoILiked />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/who-liked-me"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <WhoLikedMe />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/blocked-users"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <BlockedUsers />
               </Layout>
             </ProtectedRoute>
           }
@@ -288,15 +345,24 @@ const AppRouter = () => {
 // Main App Component
 function App() {
   return (
-    <AdminProvider>
-      <AuthProvider>
-        <ThemeProvider>
-          <ChatProvider>
-            <AppRouter />
-          </ChatProvider>
-        </ThemeProvider>
-      </AuthProvider>
-    </AdminProvider>
+    <ErrorBoundary>
+      <AdminProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <ThemeProvider>
+              <NavbarProvider>
+                <SocketProvider>
+                  <ChatProvider>
+                    <AppRouter />
+                    <ToastContainer />
+                  </ChatProvider>
+                </SocketProvider>
+              </NavbarProvider>
+            </ThemeProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </AdminProvider>
+    </ErrorBoundary>
   );
 }
 

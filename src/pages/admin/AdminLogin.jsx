@@ -122,25 +122,25 @@ const AdminLogin = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.8, y: 50 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ 
-            duration: 1.2, 
+          transition={{
+            duration: 1.2,
             ease: "easeOut",
             type: "spring",
-            stiffness: 100
+            stiffness: 100,
           }}
           className="w-full max-w-sm"
         >
           {/* Logo Section - Cinematic Entry */}
-          <motion.div 
+          <motion.div
             className="text-center mb-6"
             initial={{ opacity: 0, y: -100, scale: 0.5 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ 
-              delay: 0.3, 
-              duration: 1.5, 
+            transition={{
+              delay: 0.3,
+              duration: 1.5,
               ease: "easeOut",
               type: "spring",
-              stiffness: 120
+              stiffness: 120,
             }}
           >
             <motion.div
@@ -152,7 +152,7 @@ const AdminLogin = () => {
                 ease: "easeOut",
                 type: "spring",
                 stiffness: 150,
-                damping: 12
+                damping: 12,
               }}
               whileHover={{
                 scale: 1.05,
@@ -472,12 +472,12 @@ const AdminLogin = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ 
-              delay: 1.5, 
-              duration: 1, 
+            transition={{
+              delay: 1.5,
+              duration: 1,
               ease: "easeOut",
               type: "spring",
-              stiffness: 120
+              stiffness: 120,
             }}
             className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl"
           >
@@ -491,8 +491,8 @@ const AdminLogin = () => {
               </motion.div>
             )}
 
-            <motion.form 
-              onSubmit={handleSubmit} 
+            <motion.form
+              onSubmit={handleSubmit}
               className="space-y-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -502,15 +502,15 @@ const AdminLogin = () => {
               <motion.div
                 initial={{ opacity: 0, x: -50, scale: 0.95 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
-                transition={{ 
-                  delay: 2.5, 
-                  duration: 0.8, 
+                transition={{
+                  delay: 2.5,
+                  duration: 0.8,
                   ease: "easeOut",
                   type: "spring",
-                  stiffness: 120
+                  stiffness: 120,
                 }}
               >
-                <motion.label 
+                <motion.label
                   className="block text-white/90 text-sm font-medium mb-1.5"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -522,10 +522,10 @@ const AdminLogin = () => {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 2.9, duration: 0.7 }}
-                  whileFocus={{ 
+                  whileFocus={{
                     scale: 1.01,
                     boxShadow: "0 0 20px rgba(236, 72, 153, 0.3)",
-                    borderColor: "rgba(236, 72, 153, 0.8)"
+                    borderColor: "rgba(236, 72, 153, 0.8)",
                   }}
                   type="email"
                   name="email"
@@ -541,15 +541,15 @@ const AdminLogin = () => {
               <motion.div
                 initial={{ opacity: 0, x: 50, scale: 0.95 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
-                transition={{ 
-                  delay: 3.2, 
-                  duration: 0.8, 
+                transition={{
+                  delay: 3.2,
+                  duration: 0.8,
                   ease: "easeOut",
                   type: "spring",
-                  stiffness: 120
+                  stiffness: 120,
                 }}
               >
-                <motion.label 
+                <motion.label
                   className="block text-white/90 text-sm font-medium mb-1.5"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -561,10 +561,10 @@ const AdminLogin = () => {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 3.6, duration: 0.7 }}
-                  whileFocus={{ 
+                  whileFocus={{
                     scale: 1.01,
                     boxShadow: "0 0 20px rgba(168, 85, 247, 0.3)",
-                    borderColor: "rgba(168, 85, 247, 0.8)"
+                    borderColor: "rgba(168, 85, 247, 0.8)",
                   }}
                   type="password"
                   name="password"
@@ -580,17 +580,18 @@ const AdminLogin = () => {
               <motion.button
                 initial={{ opacity: 0, y: 30, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ 
-                  delay: 4.2, 
-                  duration: 1, 
+                transition={{
+                  delay: 4.2,
+                  duration: 1,
                   ease: "easeOut",
                   type: "spring",
-                  stiffness: 140
+                  stiffness: 140,
                 }}
-                whileHover={{ 
+                whileHover={{
                   scale: 1.02,
                   boxShadow: "0 10px 30px rgba(236, 72, 153, 0.4)",
-                  background: "linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%)"
+                  background:
+                    "linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%)",
                 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
@@ -598,7 +599,7 @@ const AdminLogin = () => {
                 className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden text-sm"
               >
                 {isLoading ? (
-                  <motion.div 
+                  <motion.div
                     className="flex items-center justify-center"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -627,64 +628,64 @@ const AdminLogin = () => {
             </motion.form>
 
             {/* Demo Credentials */}
-          {/* Demo Credentials - Cinematic Entry */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ 
-              delay: 5, 
-              duration: 0.8, 
-              ease: "easeOut",
-              type: "spring",
-              stiffness: 120
-            }}
-            className="mt-4 p-3 bg-blue-500/10 border border-blue-400/20 rounded-lg"
-          >
-            <motion.p 
-              className="text-blue-200 text-xs text-center mb-1 font-medium"
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 5.3, duration: 0.6 }}
-            >
-              Demo Credentials:
-            </motion.p>
-            <motion.p 
-              className="text-blue-100 text-xs text-center"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 5.6, duration: 0.6 }}
-            >
-              Email: admin@datingapp.com
-            </motion.p>
-            <motion.p 
-              className="text-blue-100 text-xs text-center"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 5.9, duration: 0.6 }}
-            >
-              Password: admin123
-            </motion.p>
-          </motion.div>
-
-          {/* Footer - Cinematic Entry */}
-          <motion.div 
-            className="mt-5 text-center"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 6.2, duration: 0.8 }}
-          >
+            {/* Demo Credentials - Cinematic Entry */}
             <motion.div
-              whileHover={{ x: -5 }}
-              transition={{ type: "spring", stiffness: 400 }}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{
+                delay: 5,
+                duration: 0.8,
+                ease: "easeOut",
+                type: "spring",
+                stiffness: 120,
+              }}
+              className="mt-4 p-3 bg-blue-500/10 border border-blue-400/20 rounded-lg"
             >
-              <Link
-                to="/"
-                className="text-white/60 hover:text-white text-xs transition-colors duration-300"
+              <motion.p
+                className="text-blue-200 text-xs text-center mb-1 font-medium"
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 5.3, duration: 0.6 }}
               >
-                ← Back to Main Site
-              </Link>
+                Demo Credentials:
+              </motion.p>
+              <motion.p
+                className="text-blue-100 text-xs text-center"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 5.6, duration: 0.6 }}
+              >
+                Email: admin@datingapp.com
+              </motion.p>
+              <motion.p
+                className="text-blue-100 text-xs text-center"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 5.9, duration: 0.6 }}
+              >
+                Password: admin123
+              </motion.p>
             </motion.div>
-          </motion.div>
+
+            {/* Footer - Cinematic Entry */}
+            <motion.div
+              className="mt-5 text-center"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 6.2, duration: 0.8 }}
+            >
+              <motion.div
+                whileHover={{ x: -5 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
+                <Link
+                  to="/"
+                  className="text-white/60 hover:text-white text-xs transition-colors duration-300"
+                >
+                  ← Back to Main Site
+                </Link>
+              </motion.div>
+            </motion.div>
           </motion.div>
 
           {/* Bottom Stats - Cinematic Grand Finale */}
@@ -694,24 +695,24 @@ const AdminLogin = () => {
             transition={{ delay: 6.8, duration: 1.2, ease: "easeOut" }}
             className="mt-6 grid grid-cols-3 gap-3 text-center"
           >
-            <motion.div 
+            <motion.div
               className="backdrop-blur-md bg-white/5 rounded-xl p-3"
               initial={{ opacity: 0, scale: 0.8, rotateY: -90 }}
               animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              transition={{ 
-                delay: 7.2, 
-                duration: 0.8, 
+              transition={{
+                delay: 7.2,
+                duration: 0.8,
                 ease: "easeOut",
                 type: "spring",
-                stiffness: 120
+                stiffness: 120,
               }}
-              whileHover={{ 
-                scale: 1.05, 
+              whileHover={{
+                scale: 1.05,
                 y: -5,
-                boxShadow: "0 10px 25px rgba(255,255,255,0.1)"
+                boxShadow: "0 10px 25px rgba(255,255,255,0.1)",
               }}
             >
-              <motion.div 
+              <motion.div
                 className="text-lg font-bold text-white"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -719,7 +720,7 @@ const AdminLogin = () => {
               >
                 10K+
               </motion.div>
-              <motion.div 
+              <motion.div
                 className="text-white/70 text-xs"
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -728,25 +729,25 @@ const AdminLogin = () => {
                 Happy Users
               </motion.div>
             </motion.div>
-            
-            <motion.div 
+
+            <motion.div
               className="backdrop-blur-md bg-white/5 rounded-xl p-3"
               initial={{ opacity: 0, scale: 0.8, rotateY: -90 }}
               animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              transition={{ 
-                delay: 7.6, 
-                duration: 0.8, 
+              transition={{
+                delay: 7.6,
+                duration: 0.8,
                 ease: "easeOut",
                 type: "spring",
-                stiffness: 120
+                stiffness: 120,
               }}
-              whileHover={{ 
-                scale: 1.05, 
+              whileHover={{
+                scale: 1.05,
                 y: -5,
-                boxShadow: "0 10px 25px rgba(255,255,255,0.1)"
+                boxShadow: "0 10px 25px rgba(255,255,255,0.1)",
               }}
             >
-              <motion.div 
+              <motion.div
                 className="text-lg font-bold text-white"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -754,7 +755,7 @@ const AdminLogin = () => {
               >
                 5K+
               </motion.div>
-              <motion.div 
+              <motion.div
                 className="text-white/70 text-xs"
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -763,25 +764,25 @@ const AdminLogin = () => {
                 Matches Made
               </motion.div>
             </motion.div>
-            
-            <motion.div 
+
+            <motion.div
               className="backdrop-blur-md bg-white/5 rounded-xl p-3"
               initial={{ opacity: 0, scale: 0.8, rotateY: -90 }}
               animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              transition={{ 
-                delay: 8, 
-                duration: 0.8, 
+              transition={{
+                delay: 8,
+                duration: 0.8,
                 ease: "easeOut",
                 type: "spring",
-                stiffness: 120
+                stiffness: 120,
               }}
-              whileHover={{ 
-                scale: 1.05, 
+              whileHover={{
+                scale: 1.05,
                 y: -5,
-                boxShadow: "0 10px 25px rgba(255,255,255,0.1)"
+                boxShadow: "0 10px 25px rgba(255,255,255,0.1)",
               }}
             >
-              <motion.div 
+              <motion.div
                 className="text-lg font-bold text-white"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -789,7 +790,7 @@ const AdminLogin = () => {
               >
                 99.9%
               </motion.div>
-              <motion.div 
+              <motion.div
                 className="text-white/70 text-xs"
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}

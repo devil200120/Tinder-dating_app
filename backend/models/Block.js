@@ -12,7 +12,31 @@ const blockSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  reason: String
+  blockType: {
+    type: String,
+    enum: ['complete', 'messages', 'profile'],
+    default: 'complete'
+  },
+  reason: {
+    type: String,
+    enum: [
+      'harassment',
+      'inappropriate_content', 
+      'spam',
+      'fake_profile',
+      'inappropriate_behavior',
+      'other'
+    ],
+    required: true
+  },
+  description: {
+    type: String,
+    maxlength: 500
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  }
 }, {
   timestamps: true
 });
@@ -20,6 +44,7 @@ const blockSchema = new mongoose.Schema({
 blockSchema.index({ blocker: 1, blocked: 1 }, { unique: true });
 blockSchema.index({ blocker: 1 });
 blockSchema.index({ blocked: 1 });
+blockSchema.index({ isActive: 1 });
 
 const Block = mongoose.model('Block', blockSchema);
 

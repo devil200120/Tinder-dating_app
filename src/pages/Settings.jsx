@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
-import { 
-  User, Bell, Shield, Eye, Heart, HelpCircle,
-  ChevronRight, Globe, Moon, Sun, LogOut
-} from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { useTheme } from '../hooks/useTheme';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import {
+  User,
+  Bell,
+  Shield,
+  Eye,
+  Heart,
+  HelpCircle,
+  ChevronRight,
+  Globe,
+  Moon,
+  Sun,
+  LogOut,
+} from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { useTheme } from "../hooks/useTheme";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
   const { user, logout, updateProfile } = useAuth();
@@ -16,27 +25,27 @@ const Settings = () => {
     matches: true,
     messages: true,
     likes: true,
-    promotions: false
+    promotions: false,
   });
 
   const [privacy, setPrivacy] = useState({
     showOnline: true,
     showDistance: true,
     showAge: true,
-    incognito: false
+    incognito: false,
   });
 
   const [preferences, setPreferences] = useState({
     ageMin: user?.preferences?.ageRange[0] || 24,
     ageMax: user?.preferences?.ageRange[1] || 32,
     distance: user?.preferences?.distance || 25,
-    showMe: user?.preferences?.showMe || 'everyone'
+    showMe: user?.preferences?.showMe || "everyone",
   });
 
   const handleLogout = () => {
-    if (window.confirm('Are you sure you want to log out?')) {
+    if (window.confirm("Are you sure you want to log out?")) {
       logout();
-      navigate('/login');
+      navigate("/login");
     }
   };
 
@@ -46,10 +55,10 @@ const Settings = () => {
         ...user.preferences,
         ageRange: [preferences.ageMin, preferences.ageMax],
         distance: preferences.distance,
-        showMe: preferences.showMe
-      }
+        showMe: preferences.showMe,
+      },
     });
-    alert('Preferences saved!');
+    alert("Preferences saved!");
   };
 
   return (
@@ -76,18 +85,24 @@ const Settings = () => {
             </div>
             <div className="divide-y divide-gray-200 dark:divide-dark-700">
               <button
-                onClick={() => navigate('/profile')}
+                onClick={() => navigate("/profile")}
                 className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
               >
-                <span className="text-gray-900 dark:text-white">Edit Profile</span>
+                <span className="text-gray-900 dark:text-white">
+                  Edit Profile
+                </span>
                 <ChevronRight className="w-5 h-5 text-gray-400" />
               </button>
               <button className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
-                <span className="text-gray-900 dark:text-white">Change Password</span>
+                <span className="text-gray-900 dark:text-white">
+                  Change Password
+                </span>
                 <ChevronRight className="w-5 h-5 text-gray-400" />
               </button>
               <button className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
-                <span className="text-gray-900 dark:text-white">Email & Phone</span>
+                <span className="text-gray-900 dark:text-white">
+                  Email & Phone
+                </span>
                 <ChevronRight className="w-5 h-5 text-gray-400" />
               </button>
             </div>
@@ -99,7 +114,7 @@ const Settings = () => {
               <Heart className="w-5 h-5 text-primary-500" />
               <span>Discovery Preferences</span>
             </h2>
-            
+
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -107,7 +122,9 @@ const Settings = () => {
                 </label>
                 <select
                   value={preferences.showMe}
-                  onChange={(e) => setPreferences({ ...preferences, showMe: e.target.value })}
+                  onChange={(e) =>
+                    setPreferences({ ...preferences, showMe: e.target.value })
+                  }
                   className="input-field"
                 >
                   <option value="everyone">Everyone</option>
@@ -127,7 +144,12 @@ const Settings = () => {
                     min="18"
                     max="100"
                     value={preferences.ageMin}
-                    onChange={(e) => setPreferences({ ...preferences, ageMin: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setPreferences({
+                        ...preferences,
+                        ageMin: parseInt(e.target.value),
+                      })
+                    }
                     className="flex-1"
                   />
                   <input
@@ -135,7 +157,12 @@ const Settings = () => {
                     min="18"
                     max="100"
                     value={preferences.ageMax}
-                    onChange={(e) => setPreferences({ ...preferences, ageMax: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setPreferences({
+                        ...preferences,
+                        ageMax: parseInt(e.target.value),
+                      })
+                    }
                     className="flex-1"
                   />
                 </div>
@@ -150,7 +177,12 @@ const Settings = () => {
                   min="1"
                   max="100"
                   value={preferences.distance}
-                  onChange={(e) => setPreferences({ ...preferences, distance: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setPreferences({
+                      ...preferences,
+                      distance: parseInt(e.target.value),
+                    })
+                  }
                   className="w-full"
                 />
               </div>
@@ -170,26 +202,31 @@ const Settings = () => {
               <Bell className="w-5 h-5 text-primary-500" />
               <span>Notifications</span>
             </h2>
-            
+
             <div className="space-y-4">
               {Object.entries(notifications).map(([key, value]) => (
                 <div key={key} className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white capitalize">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                      {key.replace(/([A-Z])/g, " $1").trim()}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {key === 'matches' && 'Get notified about new matches'}
-                      {key === 'messages' && 'Get notified about new messages'}
-                      {key === 'likes' && 'Get notified when someone likes you'}
-                      {key === 'promotions' && 'Receive promotional offers'}
+                      {key === "matches" && "Get notified about new matches"}
+                      {key === "messages" && "Get notified about new messages"}
+                      {key === "likes" && "Get notified when someone likes you"}
+                      {key === "promotions" && "Receive promotional offers"}
                     </p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={value}
-                      onChange={(e) => setNotifications({ ...notifications, [key]: e.target.checked })}
+                      onChange={(e) =>
+                        setNotifications({
+                          ...notifications,
+                          [key]: e.target.checked,
+                        })
+                      }
                       className="sr-only peer"
                     />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-dark-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-dark-600 peer-checked:bg-primary-500"></div>
@@ -205,32 +242,56 @@ const Settings = () => {
               <Shield className="w-5 h-5 text-primary-500" />
               <span>Privacy & Safety</span>
             </h2>
-            
+
             <div className="space-y-4">
               {Object.entries(privacy).map(([key, value]) => (
                 <div key={key} className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white capitalize">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                      {key.replace(/([A-Z])/g, " $1").trim()}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {key === 'showOnline' && 'Let others see when you\'re online'}
-                      {key === 'showDistance' && 'Show your distance to others'}
-                      {key === 'showAge' && 'Display your age on your profile'}
-                      {key === 'incognito' && 'Browse anonymously'}
+                      {key === "showOnline" &&
+                        "Let others see when you're online"}
+                      {key === "showDistance" && "Show your distance to others"}
+                      {key === "showAge" && "Display your age on your profile"}
+                      {key === "incognito" && "Browse anonymously"}
                     </p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={value}
-                      onChange={(e) => setPrivacy({ ...privacy, [key]: e.target.checked })}
+                      onChange={(e) =>
+                        setPrivacy({ ...privacy, [key]: e.target.checked })
+                      }
                       className="sr-only peer"
                     />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-dark-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-dark-600 peer-checked:bg-primary-500"></div>
                   </label>
                 </div>
               ))}
+
+              {/* Blocked Users Link */}
+              <div className="pt-4 border-t border-gray-200 dark:border-dark-700">
+                <button
+                  onClick={() => navigate("/blocked-users")}
+                  className="w-full p-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-700 rounded-lg transition-colors"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Shield className="w-5 h-5 text-red-500" />
+                    <div className="text-left">
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        Blocked Users
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Manage users you've blocked
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -253,11 +314,19 @@ const Settings = () => {
                   <Sun className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 )}
                 <span className="text-gray-900 dark:text-white">
-                  {isDarkMode ? 'Dark' : 'Light'} Mode
+                  {isDarkMode ? "Dark" : "Light"} Mode
                 </span>
               </div>
-              <div className={`w-11 h-6 rounded-full transition-colors ${isDarkMode ? 'bg-primary-500' : 'bg-gray-300'}`}>
-                <div className={`w-5 h-5 bg-white rounded-full transition-transform transform ${isDarkMode ? 'translate-x-6' : 'translate-x-0.5'} mt-0.5`} />
+              <div
+                className={`w-11 h-6 rounded-full transition-colors ${
+                  isDarkMode ? "bg-primary-500" : "bg-gray-300"
+                }`}
+              >
+                <div
+                  className={`w-5 h-5 bg-white rounded-full transition-transform transform ${
+                    isDarkMode ? "translate-x-6" : "translate-x-0.5"
+                  } mt-0.5`}
+                />
               </div>
             </button>
           </div>
@@ -272,19 +341,27 @@ const Settings = () => {
             </div>
             <div className="divide-y divide-gray-200 dark:divide-dark-700">
               <button className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
-                <span className="text-gray-900 dark:text-white">Help Center</span>
+                <span className="text-gray-900 dark:text-white">
+                  Help Center
+                </span>
                 <ChevronRight className="w-5 h-5 text-gray-400" />
               </button>
               <button className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
-                <span className="text-gray-900 dark:text-white">Safety Tips</span>
+                <span className="text-gray-900 dark:text-white">
+                  Safety Tips
+                </span>
                 <ChevronRight className="w-5 h-5 text-gray-400" />
               </button>
               <button className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
-                <span className="text-gray-900 dark:text-white">Terms of Service</span>
+                <span className="text-gray-900 dark:text-white">
+                  Terms of Service
+                </span>
                 <ChevronRight className="w-5 h-5 text-gray-400" />
               </button>
               <button className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
-                <span className="text-gray-900 dark:text-white">Privacy Policy</span>
+                <span className="text-gray-900 dark:text-white">
+                  Privacy Policy
+                </span>
                 <ChevronRight className="w-5 h-5 text-gray-400" />
               </button>
             </div>

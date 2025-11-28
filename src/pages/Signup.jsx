@@ -15,11 +15,13 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../context/ToastContext";
 import { validateEmail, validatePassword } from "../utils/helpers";
 
 const Signup = () => {
   const navigate = useNavigate();
   const { signup } = useAuth();
+  const { toast } = useToast();
   const [showContent, setShowContent] = useState(false);
   const [animationPhase, setAnimationPhase] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
@@ -29,6 +31,7 @@ const Signup = () => {
     email: "",
     password: "",
     dateOfBirth: "",
+    gender: "",
     agreeToTerms: false,
   });
   const [errors, setErrors] = useState({});
@@ -115,11 +118,25 @@ const Signup = () => {
     if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = "Date of birth is required";
     } else {
-      const age =
-        new Date().getFullYear() - new Date(formData.dateOfBirth).getFullYear();
-      if (age < 18) {
+      const birthDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      // More accurate age calculation
+      const actualAge =
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+          ? age - 1
+          : age;
+
+      if (actualAge < 18) {
         newErrors.dateOfBirth = "You must be at least 18 years old";
       }
+    }
+
+    if (!formData.gender) {
+      newErrors.gender = "Please select your gender";
     }
 
     if (!formData.agreeToTerms) {
@@ -134,15 +151,62 @@ const Signup = () => {
     e.preventDefault();
 
     if (!validateForm()) {
+      // Don't show toast - let individual field errors show instead
       return;
     }
 
     setIsSubmitting(true);
+
+    // Show loading toast
+    const loadingToastId = toast.loading("Creating your account...", {
+      title: "Setting up your profile",
+    });
+
     try {
-      await signup(formData);
-      navigate("/profile/setup");
+      // Transform form data to match backend expectations
+      const signupData = {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        password: formData.password,
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender,
+        genderPreference: ["everyone"], // Default preference using correct enum value
+      };
+
+      const result = await signup(signupData);
+
+      // Remove loading toast
+      toast.removeToast(loadingToastId);
+
+      if (result.success) {
+        toast.success("Account created successfully! 🎉", {
+          title: "Welcome to LoveConnect!",
+          description: "Let's set up your profile to find your perfect match",
+        });
+
+        setTimeout(() => {
+          navigate("/onboarding");
+        }, 1000);
+      } else {
+        toast.error(
+          result.error || "Failed to create account. Please try again.",
+          {
+            title: "Signup Failed",
+          }
+        );
+        setErrors({ submit: result.error || "Failed to create account" });
+      }
     } catch (error) {
-      setErrors({ submit: error.message });
+      console.error("Signup error:", error);
+
+      // Remove loading toast
+      toast.removeToast(loadingToastId);
+
+      toast.error("An unexpected error occurred during signup", {
+        title: "Signup Error",
+        description: "Please check your information and try again",
+      });
+      setErrors({ submit: error.message || "An unexpected error occurred" });
     } finally {
       setIsSubmitting(false);
     }
@@ -311,12 +375,15 @@ const Signup = () => {
                     value={formData.firstName}
                     onChange={handleInputChange}
                     placeholder="First Name"
-                    className={`block w-full pl-12 pr-4 py-3.5 text-gray-900 border rounded-xl text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/10 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
-                      errors.firstName ? "border-red-300" : "border-gray-200"
+                    className={`block w-full pl-12 pr-4 py-3.5 text-gray-900 border rounded-xl text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
+                      errors.firstName
+                        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:ring-purple-500/10"
                     }`}
                   />
                   {errors.firstName && (
-                    <p className="mt-1 text-xs text-red-600">
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <span className="w-1 h-1 bg-red-600 rounded-full mr-2"></span>
                       {errors.firstName}
                     </p>
                   )}
@@ -331,12 +398,15 @@ const Signup = () => {
                     value={formData.lastName}
                     onChange={handleInputChange}
                     placeholder="Last Name"
-                    className={`block w-full pl-12 pr-4 py-3.5 text-gray-900 border rounded-xl text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/10 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
-                      errors.lastName ? "border-red-300" : "border-gray-200"
+                    className={`block w-full pl-12 pr-4 py-3.5 text-gray-900 border rounded-xl text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
+                      errors.lastName
+                        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:ring-purple-500/10"
                     }`}
                   />
                   {errors.lastName && (
-                    <p className="mt-1 text-xs text-red-600">
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <span className="w-1 h-1 bg-red-600 rounded-full mr-2"></span>
                       {errors.lastName}
                     </p>
                   )}
@@ -361,12 +431,17 @@ const Signup = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="Enter your email"
-                    className={`block w-full pl-12 pr-4 py-3.5 text-gray-900 border rounded-xl text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/10 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
-                      errors.email ? "border-red-300" : "border-gray-200"
+                    className={`block w-full pl-12 pr-4 py-3.5 text-gray-900 border rounded-xl text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
+                      errors.email
+                        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:ring-purple-500/10"
                     }`}
                   />
                   {errors.email && (
-                    <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <span className="w-1 h-1 bg-red-600 rounded-full mr-2"></span>
+                      {errors.email}
+                    </p>
                   )}
                 </div>
               </div>
@@ -389,8 +464,10 @@ const Signup = () => {
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="Create password"
-                    className={`block w-full pl-12 pr-12 py-3.5 text-gray-900 border rounded-xl text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/10 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
-                      errors.password ? "border-red-300" : "border-gray-200"
+                    className={`block w-full pl-12 pr-12 py-3.5 text-gray-900 border rounded-xl text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
+                      errors.password
+                        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:ring-purple-500/10"
                     }`}
                   />
                   <button
@@ -405,7 +482,8 @@ const Signup = () => {
                     )}
                   </button>
                   {errors.password && (
-                    <p className="mt-1 text-xs text-red-600">
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <span className="w-1 h-1 bg-red-600 rounded-full mr-2"></span>
                       {errors.password}
                     </p>
                   )}
@@ -429,16 +507,63 @@ const Signup = () => {
                     name="dateOfBirth"
                     value={formData.dateOfBirth}
                     onChange={handleInputChange}
-                    className={`block w-full pl-12 pr-4 py-3.5 text-gray-900 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/10 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
-                      errors.dateOfBirth ? "border-red-300" : "border-gray-200"
+                    className={`block w-full pl-12 pr-4 py-3.5 text-gray-900 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-purple-500 transition-all duration-200 bg-white/80 hover:bg-white ${
+                      errors.dateOfBirth
+                        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:ring-purple-500/10"
                     }`}
                   />
                   {errors.dateOfBirth && (
-                    <p className="mt-1 text-xs text-red-600">
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <span className="w-1 h-1 bg-red-600 rounded-full mr-2"></span>
                       {errors.dateOfBirth}
                     </p>
                   )}
                 </div>
+              </div>
+
+              {/* Gender Selection */}
+              <div
+                className={`transform transition-all duration-700 delay-950 ${
+                  showContent
+                    ? "translate-y-0 opacity-100"
+                    : "translate-y-4 opacity-0"
+                }`}
+              >
+                <label className="block text-sm font-semibold text-gray-800 mb-3">
+                  <UserCircle className="inline w-4 h-4 mr-2" />
+                  Gender
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {["male", "female", "other"].map((genderOption) => (
+                    <label key={genderOption} className="cursor-pointer">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value={genderOption}
+                        checked={formData.gender === genderOption}
+                        onChange={handleInputChange}
+                        className="sr-only"
+                      />
+                      <div
+                        className={`px-4 py-3 text-center border rounded-xl text-sm font-medium transition-all duration-200 ${
+                          formData.gender === genderOption
+                            ? "border-purple-500 bg-purple-50 text-purple-700"
+                            : "border-gray-200 bg-white hover:border-purple-300 text-gray-700"
+                        }`}
+                      >
+                        {genderOption.charAt(0).toUpperCase() +
+                          genderOption.slice(1)}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                {errors.gender && (
+                  <p className="mt-2 text-sm text-red-600 flex items-center">
+                    <span className="w-1 h-1 bg-red-600 rounded-full mr-2"></span>
+                    {errors.gender}
+                  </p>
+                )}
               </div>
 
               {/* Terms & Privacy */}

@@ -5,6 +5,52 @@ import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 
 const chatSocket = (io) => {
+  // Helper function to emit status updates to user's contacts
+  const emitStatusToContacts = async (userId, isOnline) => {
+    try {
+      // Find all chats where this user is a participant
+      const chats = await Chat.find({
+        participants: userId
+      }).populate('participants', '_id');
+
+      // Get all contact IDs
+      const contactIds = [];
+      chats.forEach(chat => {
+        chat.participants.forEach(participant => {
+          if (participant._id.toString() !== userId) {
+            contactIds.push(participant._id.toString());
+          }
+        });
+      });
+
+      // Remove duplicates
+      const uniqueContactIds = [...new Set(contactIds)];
+
+      // Emit status update to each contact
+      uniqueContactIds.forEach(contactId => {
+        io.to(contactId).emit('user-status-update', {
+          userId,
+          isOnline,
+          lastSeen: new Date()
+        });
+      });
+    } catch (error) {
+      console.error('Error emitting status to contacts:', error);
+    }
+  };
+
+  // Helper function to update user status in database
+  const updateUserStatus = async (userId, isOnline) => {
+    try {
+      await User.findByIdAndUpdate(userId, {
+        'status.isOnline': isOnline,
+        'status.lastSeen': new Date()
+      });
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
+  };
+
   // Middleware to authenticate socket connections
   io.use(async (socket, next) => {
     try {
@@ -37,6 +83,9 @@ const chatSocket = (io) => {
 
     // Update user online status
     updateUserStatus(socket.userId, true);
+
+    // Emit user online status to their contacts
+    emitStatusToContacts(socket.userId, true);
 
     // Join chat rooms
     socket.on('join-chat', async (chatId) => {
@@ -71,58 +120,10 @@ const chatSocket = (io) => {
       console.log(`User ${socket.userId} left chat ${chatId}`);
     });
 
-    // Send message
-    socket.on('send-message', async (data) => {
-      try {
-        const { chatId, content, type = 'text', mediaUrl } = data;
-
-        const chat = await Chat.findById(chatId);
-        
-        if (!chat) {
-          socket.emit('error', { message: 'Chat not found' });
-          return;
-        }
-
-        const receiver = chat.participants.find(
-          p => p.toString() !== socket.userId
-        );
-
-        // Create message
-        const message = await Message.create({
-          chat: chatId,
-          sender: socket.userId,
-          receiver,
-          content,
-          type,
-          mediaUrl
-        });
-
-        await message.populate('sender', 'name photos');
-        await message.populate('receiver', 'name photos');
-
-        // Update chat
-        chat.lastMessage = message._id;
-        chat.lastMessageAt = new Date();
-        
-        const receiverUnreadCount = chat.unreadCount.get(receiver.toString()) || 0;
-        chat.unreadCount.set(receiver.toString(), receiverUnreadCount + 1);
-        
-        await chat.save();
-
-        // Emit to chat room
-        io.to(chatId).emit('new-message', message);
-
-        // Emit to receiver's personal room for notification
-        io.to(receiver.toString()).emit('message-notification', {
-          chatId,
-          message,
-          sender: socket.user
-        });
-
-      } catch (error) {
-        socket.emit('error', { message: error.message });
-      }
-    });
+    // Send message - Handled by HTTP API, this socket handler is redundant
+    // The HTTP API in messageController.js already handles message creation and socket emission
+    // Removing this handler to prevent duplicate messages
+    // socket.on('send-message', async (data) => { ... });
 
     // Typing indicator
     socket.on('typing-start', ({ chatId }) => {
@@ -203,53 +204,18 @@ const chatSocket = (io) => {
       }
     });
 
-    // Delete message
-    socket.on('delete-message', async ({ messageId, chatId }) => {
-      try {
-        const message = await Message.findById(messageId);
-        
-        if (!message) {
-          socket.emit('error', { message: 'Message not found' });
-          return;
-        }
-
-        if (message.sender.toString() !== socket.userId) {
-          socket.emit('error', { message: 'Not authorized' });
-          return;
-        }
-
-        message.isDeleted = true;
-        message.deletedAt = new Date();
-        await message.save();
-
-        // Emit deletion to chat
-        io.to(chatId).emit('message-deleted', {
-          messageId
-        });
-
-      } catch (error) {
-        socket.emit('error', { message: error.message });
-      }
-    });
+    // Delete message - Handled by HTTP API
+    // This handler is removed to prevent duplicate handling
+    // All message deletion is handled through the REST API endpoint
 
     // Disconnect
     socket.on('disconnect', () => {
       console.log(`❌ User disconnected: ${socket.userId}`);
       updateUserStatus(socket.userId, false);
+      // Emit user offline status to their contacts
+      emitStatusToContacts(socket.userId, false);
     });
   });
-};
-
-// Helper function to update user online status
-const updateUserStatus = async (userId, isOnline) => {
-  try {
-    await User.findByIdAndUpdate(userId, {
-      'status.isOnline': isOnline,
-      'status.lastSeen': new Date()
-    });
-  } catch (error) {
-    console.error('Error updating user status:', error);
-  }
 };
 
 export default chatSocket;

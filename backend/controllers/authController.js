@@ -126,9 +126,10 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'No account found with this email address',
+        errorType: 'EMAIL_NOT_FOUND'
       });
     }
 
@@ -147,7 +148,8 @@ export const login = async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Incorrect password. Please try again.',
+        errorType: 'INVALID_PASSWORD'
       });
     }
 

@@ -59,21 +59,45 @@ export const userService = {
     return response.data;
   },
 
-  // Block user
-  blockUser: async (userId) => {
-    const response = await api.post(`/users/block/${userId}`);
+  // Block user completely
+  blockUser: async (userId, reason, description, blockType = 'complete') => {
+    const response = await api.post(`/users/blocks/${userId}`, {
+      reason,
+      description,
+      blockType
+    });
     return response.data;
   },
 
   // Unblock user
   unblockUser: async (userId) => {
-    const response = await api.delete(`/users/block/${userId}`);
+    const response = await api.delete(`/users/blocks/${userId}`);
     return response.data;
   },
 
   // Get blocked users
-  getBlockedUsers: async () => {
-    const response = await api.get('/users/blocked');
+  getBlockedUsers: async (page = 1, limit = 20) => {
+    const response = await api.get('/users/blocks', {
+      params: { page, limit }
+    });
+    return response.data;
+  },
+
+  // Check block status
+  checkBlockStatus: async (userId) => {
+    const response = await api.get(`/users/blocks/${userId}/status`);
+    return response.data;
+  },
+
+  // Get block reasons
+  getBlockReasons: async () => {
+    const response = await api.get('/users/blocks/reasons');
+    return response.data;
+  },
+
+  // Get users who blocked me
+  getUsersWhoBlockedMe: async () => {
+    const response = await api.get('/users/blocks/blocked-by');
     return response.data;
   },
 
@@ -84,6 +108,18 @@ export const userService = {
       reason,
       description,
     });
+    return response.data;
+  },
+
+  // Update user status (online/offline)
+  updateUserStatus: async (isOnline) => {
+    const response = await api.put('/users/status', { isOnline });
+    return response.data;
+  },
+
+  // Get user status
+  getUserStatus: async (userId) => {
+    const response = await api.get(`/users/${userId}/status`);
     return response.data;
   },
 

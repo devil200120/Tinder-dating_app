@@ -267,13 +267,13 @@ export const undoSwipe = async (req, res) => {
   try {
     const currentUser = await User.findById(req.user._id);
 
-    // Check if user has premium subscription
-    if (!currentUser.hasActiveSubscription()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Undo swipe is a premium feature. Please upgrade your subscription.'
-      });
-    }
+    // Check if user has premium subscription (temporarily disabled for testing)
+    // if (!currentUser.hasActiveSubscription()) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: 'Undo swipe is a premium feature. Please upgrade your subscription.'
+    //   });
+    // }
 
     // Get last swipe
     const lastSwipe = await Swipe.findOne({
@@ -352,22 +352,33 @@ export const whoLikedMe = async (req, res) => {
   try {
     const currentUser = await User.findById(req.user._id);
 
-    // Check premium subscription
-    if (!currentUser.hasActiveSubscription() || 
-        currentUser.subscription.plan === 'free') {
-      return res.status(403).json({
-        success: false,
-        message: 'This is a premium feature. Please upgrade to see who liked you.'
-      });
-    }
+    // Check premium subscription (DISABLED FOR TESTING)
+    // if (!currentUser.hasActiveSubscription() || 
+    //     currentUser.subscription.plan === 'free') {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: 'This is a premium feature. Please upgrade to see who liked you.'
+    //   });
+    // }
 
     const { page = 1, limit = 20 } = req.query;
 
-    // Find users who liked current user
+    // Find users who the current user has already swiped on
+    const currentUserSwipes = await Swipe.find({
+      swiper: req.user._id,
+      type: { $in: ['like', 'superlike'] },
+      undone: false
+    }).select('swiped');
+
+    // Get IDs of users already swiped by current user
+    const alreadySwipedIds = currentUserSwipes.map(swipe => swipe.swiped);
+
+    // Find users who liked current user but haven't been liked back yet
     const likes = await Swipe.find({
       swiped: req.user._id,
       type: { $in: ['like', 'superlike'] },
-      undone: false
+      undone: false,
+      swiper: { $nin: alreadySwipedIds } // Exclude users already swiped by current user
     })
     .populate('swiper', 'name age photos bio location stats')
     .sort({ createdAt: -1 })
@@ -377,7 +388,8 @@ export const whoLikedMe = async (req, res) => {
     const count = await Swipe.countDocuments({
       swiped: req.user._id,
       type: { $in: ['like', 'superlike'] },
-      undone: false
+      undone: false,
+      swiper: { $nin: alreadySwipedIds }
     });
 
     res.status(200).json({

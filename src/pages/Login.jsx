@@ -11,27 +11,50 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../context/ToastContext";
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [animationPhase, setAnimationPhase] = useState(0);
+  const [animationCompleted, setAnimationCompleted] = useState(false);
+  const [submitAttempts, setSubmitAttempts] = useState(0);
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
+  const [isSubmissionBlocked, setIsSubmissionBlocked] = useState(false);
+  const [networkRetryCount, setNetworkRetryCount] = useState(0);
+  const maxRetries = 3;
 
-  // Animation sequence on component mount
+  // Animation sequence on component mount (only once)
   useEffect(() => {
+    // Check if animation has been completed in this session
+    const hasAnimated = sessionStorage.getItem("loginAnimationCompleted");
+
+    // Only run animation if not already completed
+    if (animationCompleted || hasAnimated) {
+      setAnimationPhase(3);
+      setShowContent(true);
+      setAnimationCompleted(true);
+      return;
+    }
+
     const timer1 = setTimeout(() => setAnimationPhase(1), 100);
     const timer2 = setTimeout(() => setAnimationPhase(2), 600);
     const timer3 = setTimeout(() => setAnimationPhase(3), 1100);
-    const timer4 = setTimeout(() => setShowContent(true), 1600);
+    const timer4 = setTimeout(() => {
+      setShowContent(true);
+      setAnimationCompleted(true);
+      sessionStorage.setItem("loginAnimationCompleted", "true");
+    }, 1600);
 
     return () => {
       clearTimeout(timer1);
@@ -39,31 +62,364 @@ const Login = () => {
       clearTimeout(timer3);
       clearTimeout(timer4);
     };
-  }, []);
+  }, []); // Empty dependency array to run only once
+
+  // Keyboard navigation support
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Escape key clears errors and resets form
+      if (e.key === "Escape") {
+        setErrors({});
+        if (Object.keys(errors).length > 0) {
+          e.preventDefault();
+        }
+      }
+
+      // Ctrl/Cmd + Enter submits form
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && !isLoading) {
+        e.preventDefault();
+        const form = document.getElementById("login-form");
+        if (form) {
+          form.requestSubmit();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [errors, isLoading]);
+
+  // Input validation functions
+  const validateEmail = (email) => {
+    if (!email) return "Email is required";
+    if (email.length > 254) return "Email is too long";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return "Please enter a valid email address";
+    return null;
+  };
+
+  const validatePassword = (password) => {
+    if (!password) return "Password is required";
+    if (password.length < 8)
+      return "Password must be at least 8 characters long";
+    if (password.length > 128) return "Password is too long";
+    return null;
+  };
+
+  const sanitizeInput = (input) => {
+    // Remove any potentially harmful characters
+    return input.trim().replace(/[<>"'&]/g, "");
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    const sanitizedValue = sanitizeInput(value);
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: sanitizedValue,
     }));
-    setError("");
+
+    // Clear specific field error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: null }));
+    }
+
+    // Real-time validation feedback
+    if (name === "email" && sanitizedValue) {
+      const emailError = validateEmail(sanitizedValue);
+      if (emailError) {
+        setErrors((prev) => ({ ...prev, email: emailError }));
+      }
+    }
+
+    if (name === "password" && sanitizedValue) {
+      const passwordError = validatePassword(sanitizedValue);
+      if (passwordError) {
+        setErrors((prev) => ({ ...prev, password: passwordError }));
+      }
+    }
+  };
+
+  // Rate limiting check
+  const isRateLimited = () => {
+    const now = Date.now();
+    const timeSinceLastSubmit = now - lastSubmitTime;
+    const minInterval = 1000; // 1 second minimum between submissions
+
+    if (submitAttempts >= 5 && timeSinceLastSubmit < 300000) {
+      // 5 minutes lockout after 5 attempts
+      return {
+        limited: true,
+        timeLeft: Math.ceil((300000 - timeSinceLastSubmit) / 1000),
+      };
+    }
+
+    if (timeSinceLastSubmit < minInterval) {
+      return {
+        limited: true,
+        timeLeft: Math.ceil((minInterval - timeSinceLastSubmit) / 1000),
+      };
+    }
+
+    return { limited: false };
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
+    let loadingToastId = null;
 
-    const result = await login(formData.email, formData.password);
+    try {
+      // Prevent default form submission behavior
+      if (e && typeof e.preventDefault === "function") {
+        e.preventDefault();
+        e.stopPropagation();
+      }
 
-    if (result.success) {
-      navigate("/discover");
-    } else {
-      setError(result.error || "Login failed. Please try again.");
+      console.log("Login form submitted with:", {
+        email: formData.email,
+        passwordLength: formData.password.length,
+      });
+
+      // Prevent multiple submissions
+      if (isLoading || isSubmissionBlocked) {
+        console.log("Submission blocked - already loading or blocked");
+        toast.warning("Please wait for the current request to complete", {
+          title: "Slow Down",
+        });
+        return;
+      }
+
+      // Rate limiting check
+      const rateLimitCheck = isRateLimited();
+      if (rateLimitCheck.limited) {
+        const message =
+          submitAttempts >= 5
+            ? `Too many failed attempts. Please wait ${rateLimitCheck.timeLeft} seconds before trying again.`
+            : `Please wait ${rateLimitCheck.timeLeft} second(s) before submitting again.`;
+
+        toast.error(message, {
+          title: "Rate Limited",
+          duration: 8000,
+        });
+        return;
+      }
+
+      // Client-side validation
+      const validationErrors = {};
+      const emailError = validateEmail(formData.email);
+      const passwordError = validatePassword(formData.password);
+
+      if (emailError) validationErrors.email = emailError;
+      if (passwordError) validationErrors.password = passwordError;
+
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        const firstError = Object.values(validationErrors)[0];
+        toast.error(firstError, {
+          title: "Validation Error",
+          duration: 5000,
+        });
+        return;
+      }
+
+      // Clear previous errors
+      setErrors({});
+      setIsLoading(true);
+      setIsSubmissionBlocked(true);
+      setLastSubmitTime(Date.now());
+      setSubmitAttempts((prev) => prev + 1);
+
+      // Show loading toast with timeout protection
+      loadingToastId = toast.loading("Signing you in...", {
+        title: "Authenticating",
+      });
+
+      // Set a timeout for the request
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Request timeout")), 30000); // 30 second timeout
+      });
+
+      try {
+        console.log("Calling login function...");
+
+        // Race between login and timeout
+        const result = await Promise.race([
+          login(formData.email, formData.password),
+          timeoutPromise,
+        ]);
+
+        console.log("Login result:", result);
+
+        // Remove loading toast immediately
+        if (loadingToastId) {
+          toast.removeToast(loadingToastId);
+          loadingToastId = null;
+        }
+
+        if (result && result.success) {
+          console.log("Login successful, navigating...");
+
+          // Reset rate limiting on success
+          setSubmitAttempts(0);
+          setNetworkRetryCount(0);
+
+          toast.success("Welcome back! 🎉", {
+            title: "Login Successful",
+            description: "Redirecting to your matches...",
+          });
+
+          // Navigate with delay to show success message
+          setTimeout(() => {
+            navigate("/discover", { replace: true });
+          }, 1500);
+        } else {
+          console.log("Login failed:", result?.error);
+
+          // Determine error type and provide appropriate message
+          let errorMessage = "Login failed. Please check your credentials.";
+          let errorTitle = "Login Failed";
+
+          if (result?.error || result?.errorType) {
+            const errorLower = (result.error || "").toLowerCase();
+            const errorType = result.errorType;
+
+            if (
+              errorType === "EMAIL_NOT_FOUND" ||
+              errorLower.includes("no account found")
+            ) {
+              errorMessage =
+                "No account found with this email address. Would you like to sign up instead?";
+              errorTitle = "Email Not Found";
+              setErrors({ email: "Email not registered" });
+            } else if (
+              errorType === "INVALID_PASSWORD" ||
+              errorLower.includes("incorrect password")
+            ) {
+              errorMessage =
+                "Incorrect password. Please try again or reset your password.";
+              errorTitle = "Wrong Password";
+              setErrors({ password: "Incorrect password" });
+            } else if (errorLower.includes("invalid credentials")) {
+              errorMessage =
+                "Invalid email or password. Please check your credentials and try again.";
+              errorTitle = "Invalid Credentials";
+            } else if (
+              errorLower.includes("blocked") ||
+              errorLower.includes("banned")
+            ) {
+              errorMessage =
+                "Your account has been temporarily suspended. Please contact support.";
+              errorTitle = "Account Suspended";
+            } else if (
+              errorLower.includes("verified") ||
+              errorLower.includes("verification")
+            ) {
+              errorMessage =
+                "Please verify your email address before logging in. Check your inbox for a verification email.";
+              errorTitle = "Email Verification Required";
+            } else {
+              errorMessage = result.error;
+            }
+          }
+
+          toast.error(errorMessage, {
+            title: errorTitle,
+            duration: 8000,
+          });
+        }
+      } catch (loginError) {
+        console.error("Login function error:", loginError);
+
+        // Remove loading toast on error
+        if (loadingToastId) {
+          toast.removeToast(loadingToastId);
+          loadingToastId = null;
+        }
+
+        let errorMessage = "An unexpected error occurred. Please try again.";
+        let errorTitle = "Login Error";
+        let shouldRetry = false;
+
+        if (loginError.message === "Request timeout") {
+          errorMessage =
+            "The request timed out. Please check your internet connection and try again.";
+          errorTitle = "Request Timeout";
+          shouldRetry = networkRetryCount < maxRetries;
+        } else if (
+          loginError.code === "NETWORK_ERROR" ||
+          loginError.message.includes("network")
+        ) {
+          errorMessage =
+            "Network error. Please check your internet connection.";
+          errorTitle = "Connection Error";
+          shouldRetry = networkRetryCount < maxRetries;
+        } else if (loginError.response?.status === 429) {
+          errorMessage =
+            "Too many requests. Please wait a moment and try again.";
+          errorTitle = "Rate Limited";
+        } else if (loginError.response?.status === 500) {
+          errorMessage = "Server error. Please try again in a few minutes.";
+          errorTitle = "Server Error";
+        } else if (loginError.response?.status === 503) {
+          errorMessage =
+            "Service temporarily unavailable. Please try again later.";
+          errorTitle = "Service Unavailable";
+        } else {
+          errorMessage =
+            loginError?.message ||
+            loginError?.response?.data?.message ||
+            errorMessage;
+        }
+
+        if (shouldRetry && networkRetryCount < maxRetries) {
+          setNetworkRetryCount((prev) => prev + 1);
+          toast.warning(
+            `Retry attempt ${networkRetryCount + 1}/${maxRetries}`,
+            {
+              title: "Retrying...",
+              duration: 3000,
+            }
+          );
+
+          // Retry after a short delay
+          setTimeout(() => {
+            handleSubmit(e);
+          }, 2000);
+          return;
+        }
+
+        toast.error(errorMessage, {
+          title: errorTitle,
+          description: shouldRetry
+            ? ""
+            : "If the problem persists, please contact support.",
+          duration: 10000,
+        });
+      }
+    } catch (formError) {
+      console.error("Form submission error:", formError);
+
+      if (loadingToastId) {
+        toast.removeToast(loadingToastId);
+      }
+
+      toast.error(
+        "Form submission failed. Please refresh the page and try again.",
+        {
+          title: "Submission Error",
+          duration: 8000,
+        }
+      );
+    } finally {
+      setIsLoading(false);
+
+      // Unblock submission after a short delay
+      setTimeout(() => {
+        setIsSubmissionBlocked(false);
+      }, 1000);
+
+      console.log("Login process completed, loading set to false");
     }
-
-    setIsLoading(false);
   };
 
   // Floating heart particles component
@@ -252,46 +608,111 @@ const Login = () => {
               <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-white/5 rounded-2xl"></div>
               <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-t-2xl"></div>
 
-              <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-4 relative z-10"
+                id="login-form"
+                noValidate
+                autoComplete="off"
+              >
                 {/* Compact Email Input */}
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-gray-700">
-                    Email Address
+                    Email Address{" "}
+                    {errors.email && <span className="text-red-500">*</span>}
                   </label>
                   <div className="relative group">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-600 transition-colors duration-300" />
+                    <Mail
+                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 transition-colors duration-300 ${
+                        errors.email
+                          ? "text-red-400"
+                          : "text-gray-400 group-focus-within:text-purple-600"
+                      }`}
+                    />
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-300 bg-white/80 backdrop-blur-sm focus:bg-white hover:border-purple-300 text-sm"
+                      disabled={isLoading}
+                      className={`w-full pl-10 pr-3 py-3 border rounded-xl text-gray-900 placeholder-gray-400 transition-all duration-300 bg-white/80 backdrop-blur-sm focus:bg-white text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                        errors.email
+                          ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                          : "border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 hover:border-purple-300"
+                      }`}
                       placeholder="Enter your email"
+                      autoComplete="email"
+                      maxLength={254}
+                      aria-describedby={
+                        errors.email ? "email-error" : undefined
+                      }
+                      aria-invalid={!!errors.email}
                     />
+                    {errors.email && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs">!</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
+                  {errors.email && (
+                    <p
+                      id="email-error"
+                      className="text-xs text-red-600 flex items-center space-x-1 animate-pulse"
+                      role="alert"
+                    >
+                      <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                      <span>{errors.email}</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Compact Password Input */}
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-gray-700">
-                    Password
+                    Password{" "}
+                    {errors.password && <span className="text-red-500">*</span>}
                   </label>
                   <div className="relative group">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-600 transition-colors duration-300" />
+                    <Lock
+                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 transition-colors duration-300 ${
+                        errors.password
+                          ? "text-red-400"
+                          : "text-gray-400 group-focus-within:text-purple-600"
+                      }`}
+                    />
                     <input
                       type={showPassword ? "text" : "password"}
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
                       required
-                      className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-300 bg-white/80 backdrop-blur-sm focus:bg-white hover:border-purple-300 text-sm"
+                      disabled={isLoading}
+                      className={`w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-400 transition-all duration-300 bg-white/80 backdrop-blur-sm focus:bg-white text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                        errors.password
+                          ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                          : "border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 hover:border-purple-300"
+                      }`}
                       placeholder="Enter your password"
+                      autoComplete="current-password"
+                      maxLength={128}
+                      aria-describedby={
+                        errors.password ? "password-error" : undefined
+                      }
+                      aria-invalid={!!errors.password}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-colors duration-300"
+                      disabled={isLoading}
+                      className={`absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        errors.password
+                          ? "text-red-400 hover:text-red-600"
+                          : "text-gray-400 hover:text-purple-600"
+                      }`}
+                      tabIndex={-1}
                     >
                       {showPassword ? (
                         <EyeOff className="w-4 h-4" />
@@ -300,13 +721,27 @@ const Login = () => {
                       )}
                     </button>
                   </div>
+                  {errors.password && (
+                    <p
+                      id="password-error"
+                      className="text-xs text-red-600 flex items-center space-x-1 animate-pulse"
+                      role="alert"
+                    >
+                      <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                      <span>{errors.password}</span>
+                    </p>
+                  )}
                 </div>
 
-                {/* Compact Error Message */}
-                {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-xs flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span>{error}</span>
+                {/* Rate Limiting Warning */}
+                {submitAttempts >= 3 && (
+                  <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-3 py-2 rounded-lg text-xs flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                    <span>
+                      {submitAttempts >= 5
+                        ? "Account temporarily locked due to multiple failed attempts"
+                        : `${submitAttempts}/5 login attempts used. Be careful!`}
+                    </span>
                   </div>
                 )}
 
@@ -335,19 +770,51 @@ const Login = () => {
                 {/* Compact Submit Button */}
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  disabled={
+                    isLoading ||
+                    isSubmissionBlocked ||
+                    Object.values(errors).some((error) => error)
+                  }
+                  className={`w-full py-3 rounded-xl font-semibold shadow-lg transition-all duration-300 transform text-sm ${
+                    isLoading ||
+                    isSubmissionBlocked ||
+                    Object.values(errors).some((error) => error)
+                      ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                      : "bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                  }`}
+                  aria-label={
+                    isLoading ? "Signing in..." : "Sign in to your account"
+                  }
                 >
                   <div className="flex items-center justify-center space-x-2">
                     {isLoading ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        <span className="text-sm">Signing in...</span>
+                        <div
+                          className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
+                          aria-hidden="true"
+                        ></div>
+                        <span>
+                          {networkRetryCount > 0
+                            ? `Retrying... (${networkRetryCount}/${maxRetries})`
+                            : "Signing in..."}
+                        </span>
+                      </>
+                    ) : isSubmissionBlocked ? (
+                      <>
+                        <div
+                          className="w-4 h-4 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin"
+                          aria-hidden="true"
+                        ></div>
+                        <span>Processing...</span>
+                      </>
+                    ) : Object.values(errors).some((error) => error) ? (
+                      <>
+                        <span>Please fix errors above</span>
                       </>
                     ) : (
                       <>
-                        <span className="text-sm">Sign In</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <span>Sign In</span>
+                        <ArrowRight className="w-4 h-4" aria-hidden="true" />
                       </>
                     )}
                   </div>
@@ -408,15 +875,27 @@ const Login = () => {
               </div>
 
               {/* Compact Sign Up Link */}
-              <p className="mt-4 text-center text-sm">
+              <div
+                className="mt-4 text-center text-sm relative z-[9999]"
+                style={{ pointerEvents: "auto" }}
+              >
                 <span className="text-gray-600">Don't have an account? </span>
-                <Link
-                  to="/signup"
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent hover:from-purple-700 hover:to-indigo-700 font-semibold transition-all duration-200"
+                <button
+                  onClick={() => {
+                    console.log("Signup button clicked!");
+                    navigate("/signup");
+                  }}
+                  className="text-purple-600 hover:text-purple-700 font-semibold transition-colors duration-200 underline decoration-purple-600 hover:decoration-purple-700 bg-transparent border-none cursor-pointer p-0 inline"
+                  style={{
+                    pointerEvents: "auto",
+                    cursor: "pointer",
+                    background: "transparent",
+                    border: "none",
+                  }}
                 >
                   Sign up for free
-                </Link>
-              </p>
+                </button>
+              </div>
             </div>
 
             {/* Compact Demo Credentials */}

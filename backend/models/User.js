@@ -84,8 +84,12 @@ const userSchema = new mongoose.Schema({
       default: [0, 0]
     },
     city: String,
+    area: String,
+    mainCity: String,
+    state: String,
     country: String,
-    address: String
+    address: String,
+    placeId: String
   },
   preferences: {
     ageRange: {

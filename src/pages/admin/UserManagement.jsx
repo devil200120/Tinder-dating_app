@@ -346,7 +346,10 @@ const UserManagement = () => {
                           {user.name}
                         </div>
                         <div className="text-xs text-gray-500">
-                          Age {user.age} • {user.location}
+                          Age {user.age} •{" "}
+                          {user.location?.city ||
+                            user.location?.address ||
+                            "Unknown location"}
                         </div>
                       </div>
                     </div>
@@ -589,7 +592,10 @@ const UserManagement = () => {
                     <div>
                       <h2 className="text-xl font-bold">{selectedUser.name}</h2>
                       <p className="text-white/90 text-sm">
-                        Age {selectedUser.age} • {selectedUser.location}
+                        Age {selectedUser.age} •{" "}
+                        {selectedUser.location?.city ||
+                          selectedUser.location?.address ||
+                          "Unknown location"}
                       </p>
                       <span
                         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-2 ${

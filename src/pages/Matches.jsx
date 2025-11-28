@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart, MessageCircle, Search, Filter } from "lucide-react";
-import { useChat } from "../hooks/useChat";
+import { useChat } from "../context/ChatContext";
 import Avatar from "../components/Avatar";
+import LastSeenStatus from "../components/LastSeenStatus";
 import { formatTimestamp } from "../utils/helpers";
 
 const Matches = () => {
@@ -12,23 +13,25 @@ const Matches = () => {
   const [filterOnline, setFilterOnline] = useState(false);
 
   const filteredMatches = matches.filter((match) => {
-    const matchesSearch = match.name
+    if (!match.user) return false;
+
+    const matchesSearch = match.user.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    const matchesOnline = !filterOnline || match.online;
+    const matchesOnline = !filterOnline || match.user.status?.isOnline;
     return matchesSearch && matchesOnline;
   });
 
   const handleMatchClick = (match) => {
-    const user = getUserById(match.userId);
-    if (user) {
-      navigate(`/profile/${user.id}`, { state: { user } });
+    if (match.user) {
+      navigate(`/profile/${match.user._id}`, { state: { user: match.user } });
     }
   };
 
   const handleMessageClick = (e, match) => {
     e.stopPropagation();
-    navigate(`/chats/${match.userId}`);
+    // Navigate to chat using the match ID, not user ID
+    navigate(`/chats/${match._id}`);
   };
 
   if (matches.length === 0) {
@@ -151,11 +154,18 @@ const Matches = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredMatches.map((match, index) => {
-              const user = getUserById(match.userId);
+              if (!match.user) return null;
+
+              console.log(
+                "Rendering match:",
+                match.user.name,
+                "Photos:",
+                match.user.photos
+              ); // Debug log
 
               return (
                 <div
-                  key={match.id}
+                  key={match._id}
                   onClick={() => handleMatchClick(match)}
                   className="group cursor-pointer animate-fade-in hover:scale-[1.02] transition-all duration-500"
                   style={{ animationDelay: `${index * 0.1}s` }}
@@ -164,13 +174,30 @@ const Matches = () => {
                     {/* Enhanced Image Container */}
                     <div className="relative aspect-[3/4] overflow-hidden">
                       <img
-                        src={match.image}
-                        alt={match.name}
+                        src={
+                          match.user.photos?.[0]?.url ||
+                          match.user.photos?.[0] ||
+                          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            match.user.name || "User"
+                          )}&size=400&background=e11d48&color=ffffff&bold=true`
+                        }
+                        alt={match.user.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        onError={(e) => {
+                          console.log(
+                            "Image failed to load for user:",
+                            match.user.name,
+                            "Photos:",
+                            match.user.photos
+                          );
+                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            match.user.name || "User"
+                          )}&size=400&background=e11d48&color=ffffff&bold=true`;
+                        }}
                       />
 
                       {/* Enhanced Online Status */}
-                      {match.online && (
+                      {match.user.status?.isOnline && (
                         <div className="absolute top-3 right-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center space-x-1">
                           <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
                           <span>Online</span>
@@ -188,11 +215,17 @@ const Matches = () => {
                       {/* Enhanced Info Section */}
                       <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                         <h3 className="text-xl font-bold mb-1 drop-shadow-lg">
-                          {match.name}, {match.age}
+                          {match.user.name}, {match.user.age}
                         </h3>
-                        {user && (
+                        <LastSeenStatus
+                          lastSeen={match.user.status?.lastSeen}
+                          isOnline={match.user.status?.isOnline}
+                          variant="short"
+                          className="mb-2 opacity-90"
+                        />
+                        {match.user.bio && (
                           <p className="text-sm opacity-90 line-clamp-2 drop-shadow">
-                            {user.bio}
+                            {match.user.bio}
                           </p>
                         )}
                       </div>
@@ -204,7 +237,7 @@ const Matches = () => {
                         <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center space-x-2">
                           <div className="w-2 h-2 bg-pink-500 rounded-full animate-pulse"></div>
                           <span>
-                            Matched {formatTimestamp(match.timestamp)}
+                            Matched {formatTimestamp(match.matchedAt)}
                           </span>
                         </div>
                         <button
@@ -237,12 +270,26 @@ const Matches = () => {
             <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg max-w-md mx-auto">
               The perfect match could be just one swipe away. Keep exploring!
             </p>
-            <button
-              onClick={() => navigate("/discover")}
-              className="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-600 hover:via-purple-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-            >
-              Continue Your Journey ✨
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => navigate("/discover")}
+                className="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-600 hover:via-purple-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              >
+                Continue Your Journey ✨
+              </button>
+              <button
+                onClick={() => navigate("/who-liked-me")}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              >
+                Like Me Back 💕
+              </button>
+              <button
+                onClick={() => navigate("/who-i-liked")}
+                className="bg-white/80 dark:bg-dark-800/80 backdrop-blur-sm border border-white/20 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-dark-700 px-8 py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
+                Who I Liked 💭
+              </button>
+            </div>
           </div>
         </div>
       </div>

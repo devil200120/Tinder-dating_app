@@ -19,22 +19,38 @@ const messageSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: true,
     trim: true,
     maxlength: 5000
   },
   type: {
     type: String,
-    enum: ['text', 'image', 'gif'],
+    enum: ['text', 'image', 'voice', 'file', 'gif', 'surprise'],
     default: 'text'
   },
   mediaUrl: String,
+  fileName: String,
+  fileSize: Number,
+  metadata: {
+    duration: Number, // for voice messages
+    title: String,    // for gifs
+    thumbnail: String // for videos
+  },
   readBy: [{
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     },
     readAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  deliveredTo: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    deliveredAt: {
       type: Date,
       default: Date.now
     }
@@ -57,7 +73,45 @@ const messageSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  deletedAt: Date
+  deletedAt: Date,
+  deletedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  deletedForUsers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  // Reply functionality
+  replyTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Message'
+  },
+  isReply: {
+    type: Boolean,
+    default: false
+  },
+  // Edit functionality
+  isEdited: {
+    type: Boolean,
+    default: false
+  },
+  editedAt: Date,
+  originalContent: String,
+  // Surprise message functionality
+  isSurprise: {
+    type: Boolean,
+    default: false
+  },
+  isRevealed: {
+    type: Boolean,
+    default: false
+  },
+  revealedAt: Date,
+  surpriseEmoji: {
+    type: String,
+    default: '🎉'
+  }
 }, {
   timestamps: true
 });

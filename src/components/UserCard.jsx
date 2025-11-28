@@ -5,14 +5,25 @@ const UserCard = ({ user, onSwipe, style, className = "" }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
 
+  // Extract images from photos array, fallback to empty array
+  const userImages = user?.photos?.map((photo) => photo.url) || [];
+  const hasImages = userImages.length > 0;
+
+  // Use placeholder image if no images available
+  const currentImage = hasImages
+    ? userImages[currentImageIndex]
+    : "/api/placeholder/400/600";
+
   const handleImageClick = (e) => {
+    if (!hasImages) return; // Don't handle clicks if no images
+
     const cardWidth = e.currentTarget.offsetWidth;
     const clickX = e.nativeEvent.offsetX;
 
     if (clickX > cardWidth / 2) {
       // Clicked right side - next image
       setCurrentImageIndex((prev) =>
-        prev < user.images.length - 1 ? prev + 1 : prev
+        prev < userImages.length - 1 ? prev + 1 : prev
       );
     } else {
       // Clicked left side - previous image
@@ -28,23 +39,38 @@ const UserCard = ({ user, onSwipe, style, className = "" }) => {
         onClick={handleImageClick}
       >
         <img
-          src={user.images[currentImageIndex]}
+          src={currentImage}
           alt={user.name}
           className="w-full h-full object-cover"
           draggable="false"
+          onError={(e) => {
+            // Fallback to a default avatar if image fails to load
+            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              user.name
+            )}&size=400&background=gradient`;
+          }}
         />
 
-        {/* Image Indicators */}
-        <div className="absolute top-3 left-3 right-3 flex space-x-1 z-10">
-          {user.images.map((_, index) => (
-            <div
-              key={index}
-              className={`flex-1 h-0.5 rounded-full transition-all duration-300 ${
-                index === currentImageIndex ? "bg-white" : "bg-white/30"
-              }`}
-            />
-          ))}
-        </div>
+        {/* Image Indicators - only show if user has multiple images */}
+        {hasImages && userImages.length > 1 && (
+          <div className="absolute top-3 left-3 right-3 flex space-x-1 z-10">
+            {userImages.map((_, index) => (
+              <div
+                key={index}
+                className={`flex-1 h-0.5 rounded-full transition-all duration-300 ${
+                  index === currentImageIndex ? "bg-white" : "bg-white/30"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* No Photos Badge */}
+        {!hasImages && (
+          <div className="absolute top-3 left-3 bg-yellow-500 text-white px-2 py-1 rounded-lg text-xs font-semibold">
+            No Photos
+          </div>
+        )}
 
         {/* Verified Badge */}
         {user.verified && (
@@ -79,7 +105,10 @@ const UserCard = ({ user, onSwipe, style, className = "" }) => {
               <div className="flex items-center space-x-1 text-xs mt-0.5 opacity-90">
                 <MapPin className="w-3 h-3" />
                 <span>
-                  {user.location} • {user.distance} miles away
+                  {user.location?.city ||
+                    user.location?.address ||
+                    "Unknown location"}{" "}
+                  • {user.distance || 0} miles away
                 </span>
               </div>
             </div>

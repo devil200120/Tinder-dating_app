@@ -1,26 +1,91 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Camera, MapPin, Target, ChevronRight, ChevronLeft } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { interestOptions } from '../utils/mockData';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Camera,
+  MapPin,
+  Target,
+  ChevronRight,
+  ChevronLeft,
+} from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { interestOptions } from "../utils/mockData";
+import LocationInput from "../components/LocationInput";
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const { completeOnboarding } = useAuth();
-  
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     photos: [],
-    location: '',
-    bio: '',
+    location: {
+      city: "",
+      country: "",
+      address: "",
+      coordinates: [0, 0],
+    },
+    bio: "",
     interests: [],
-    lookingFor: '',
+    lookingFor: "",
     ageRange: [24, 32],
-    distance: 25
+    distance: 25,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(null);
 
   const totalSteps = 4;
+
+  const handlePhotoUpload = (index) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        setUploadingPhoto(index);
+
+        // Create preview URL
+        const previewUrl = URL.createObjectURL(file);
+
+        // Update photos array
+        setFormData((prev) => {
+          const newPhotos = [...prev.photos];
+          newPhotos[index] = previewUrl;
+          return { ...prev, photos: newPhotos };
+        });
+
+        setUploadingPhoto(null);
+      }
+    };
+    input.click();
+  };
+
+  const handleLocationChange = (locationData) => {
+    setFormData((prev) => ({
+      ...prev,
+      location: {
+        city: locationData.city || "",
+        area: locationData.area || "",
+        mainCity: locationData.mainCity || "",
+        state: locationData.state || "",
+        country: locationData.country || "",
+        address: locationData.address || "",
+        coordinates: locationData.coordinates || [0, 0],
+        placeId: locationData.placeId || "",
+      },
+    }));
+  };
+
+  const removePhoto = (index) => {
+    setFormData((prev) => {
+      const newPhotos = [...prev.photos];
+      if (newPhotos[index]) {
+        URL.revokeObjectURL(newPhotos[index]); // Clean up blob URL
+        newPhotos.splice(index, 1); // Remove photo and shift others
+      }
+      return { ...prev, photos: newPhotos };
+    });
+  };
 
   const handleNext = () => {
     if (step < totalSteps) {
@@ -39,7 +104,10 @@ const Onboarding = () => {
   const toggleInterest = (interest) => {
     setFormData((prev) => {
       if (prev.interests.includes(interest)) {
-        return { ...prev, interests: prev.interests.filter((i) => i !== interest) };
+        return {
+          ...prev,
+          interests: prev.interests.filter((i) => i !== interest),
+        };
       } else if (prev.interests.length < 10) {
         return { ...prev, interests: [...prev.interests, interest] };
       }
@@ -49,11 +117,23 @@ const Onboarding = () => {
 
   const handleComplete = async () => {
     setIsLoading(true);
-    const result = await completeOnboarding(formData);
-    if (result.success) {
-      navigate('/discover');
+    try {
+      console.log("Completing onboarding with data:", formData);
+      const result = await completeOnboarding(formData);
+      console.log("Onboarding result:", result);
+
+      if (result.success) {
+        console.log("Onboarding successful, navigating to /discover");
+        navigate("/discover");
+      } else {
+        console.error("Onboarding failed:", result.error);
+        // Could show an error toast here if needed
+      }
+    } catch (error) {
+      console.error("Error during onboarding completion:", error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const canProceed = () => {
@@ -61,7 +141,7 @@ const Onboarding = () => {
       case 1:
         return formData.photos.length >= 2;
       case 2:
-        return formData.location && formData.bio.trim();
+        return formData.location.city && formData.bio.trim();
       case 3:
         return formData.interests.length >= 3;
       case 4:
@@ -77,8 +157,12 @@ const Onboarding = () => {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between mb-2">
-            <span className="text-white font-medium">Step {step} of {totalSteps}</span>
-            <span className="text-white/70">{Math.round((step / totalSteps) * 100)}%</span>
+            <span className="text-white font-medium">
+              Step {step} of {totalSteps}
+            </span>
+            <span className="text-white/70">
+              {Math.round((step / totalSteps) * 100)}%
+            </span>
           </div>
           <div className="h-2 bg-white/20 rounded-full overflow-hidden">
             <div
@@ -107,19 +191,47 @@ const Onboarding = () => {
                 {[0, 1, 2, 3, 4, 5].map((index) => (
                   <div
                     key={index}
-                    className="aspect-square border-2 border-dashed border-gray-300 dark:border-dark-600 rounded-xl flex flex-col items-center justify-center hover:border-primary-500 transition-colors cursor-pointer"
+                    className="aspect-square border-2 border-dashed border-gray-300 dark:border-dark-600 rounded-xl flex flex-col items-center justify-center hover:border-primary-500 transition-colors cursor-pointer relative group"
+                    onClick={() =>
+                      !formData.photos[index] && handlePhotoUpload(index)
+                    }
                   >
-                    {formData.photos[index] ? (
-                      <img
-                        src={formData.photos[index]}
-                        alt={`Photo ${index + 1}`}
-                        className="w-full h-full object-cover rounded-xl"
-                      />
+                    {uploadingPhoto === index ? (
+                      <div className="flex flex-col items-center">
+                        <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                        <span className="text-xs text-gray-400">
+                          Uploading...
+                        </span>
+                      </div>
+                    ) : formData.photos[index] ? (
+                      <>
+                        <img
+                          src={formData.photos[index]}
+                          alt={`Photo ${index + 1}`}
+                          className="w-full h-full object-cover rounded-xl"
+                        />
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removePhoto(index);
+                          }}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          ×
+                        </button>
+                        {index === 0 && (
+                          <div className="absolute bottom-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded">
+                            Main
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <>
                         <Camera className="w-8 h-8 text-gray-400 mb-2" />
-                        <span className="text-xs text-gray-400">
-                          {index === 0 ? 'Main Photo' : `Photo ${index + 1}`}
+                        <span className="text-xs text-gray-400 text-center">
+                          {index === 0
+                            ? "Add Main Photo"
+                            : `Add Photo ${index + 1}`}
                         </span>
                       </>
                     )}
@@ -127,9 +239,15 @@ const Onboarding = () => {
                 ))}
               </div>
 
-              <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                This is a demo. In production, photos would be uploaded here.
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">
+                Click on any slot to upload a photo. You need at least 2 photos
+                to continue.
               </p>
+
+              <div className="text-sm text-gray-400 text-center">
+                <p>📸 Upload high-quality photos that show your face clearly</p>
+                <p>✨ Your main photo will be shown first in your profile</p>
+              </div>
             </div>
           )}
 
@@ -151,13 +269,21 @@ const Onboarding = () => {
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Location
                   </label>
-                  <input
-                    type="text"
+                  <LocationInput
                     value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    className="input-field"
-                    placeholder="San Francisco, CA"
+                    onChange={handleLocationChange}
+                    placeholder="Enter your city or area"
                   />
+
+                  {/* Show location confirmation */}
+                  {formData.location.coordinates[0] !== 0 &&
+                    formData.location.coordinates[1] !== 0 && (
+                      <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                        <p className="text-xs text-green-700 dark:text-green-300">
+                          ✓ Location confirmed: {formData.location.address}
+                        </p>
+                      </div>
+                    )}
                 </div>
 
                 <div>
@@ -166,7 +292,9 @@ const Onboarding = () => {
                   </label>
                   <textarea
                     value={formData.bio}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, bio: e.target.value })
+                    }
                     rows="5"
                     maxLength="500"
                     className="input-field resize-none"
@@ -203,8 +331,8 @@ const Onboarding = () => {
                       onClick={() => toggleInterest(interest)}
                       className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                         isSelected
-                          ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-md'
-                          : 'bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600'
+                          ? "bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-md"
+                          : "bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600"
                       }`}
                     >
                       {interest}
@@ -238,7 +366,9 @@ const Onboarding = () => {
                   </label>
                   <select
                     value={formData.lookingFor}
-                    onChange={(e) => setFormData({ ...formData, lookingFor: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, lookingFor: e.target.value })
+                    }
                     className="input-field"
                   >
                     <option value="">Select...</option>
@@ -262,7 +392,10 @@ const Onboarding = () => {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          ageRange: [parseInt(e.target.value), formData.ageRange[1]]
+                          ageRange: [
+                            parseInt(e.target.value),
+                            formData.ageRange[1],
+                          ],
                         })
                       }
                       className="flex-1"
@@ -275,7 +408,10 @@ const Onboarding = () => {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          ageRange: [formData.ageRange[0], parseInt(e.target.value)]
+                          ageRange: [
+                            formData.ageRange[0],
+                            parseInt(e.target.value),
+                          ],
                         })
                       }
                       className="flex-1"
@@ -293,7 +429,10 @@ const Onboarding = () => {
                     max="100"
                     value={formData.distance}
                     onChange={(e) =>
-                      setFormData({ ...formData, distance: parseInt(e.target.value) })
+                      setFormData({
+                        ...formData,
+                        distance: parseInt(e.target.value),
+                      })
                     }
                     className="w-full"
                   />
@@ -323,7 +462,13 @@ const Onboarding = () => {
               disabled={!canProceed() || isLoading}
               className="btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span>{step === totalSteps ? (isLoading ? 'Completing...' : 'Complete') : 'Continue'}</span>
+              <span>
+                {step === totalSteps
+                  ? isLoading
+                    ? "Completing..."
+                    : "Complete"
+                  : "Continue"}
+              </span>
               {step < totalSteps && <ChevronRight className="w-5 h-5" />}
             </button>
           </div>

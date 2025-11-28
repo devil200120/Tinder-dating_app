@@ -1,4 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { authService } from "../services/authService.js";
+import { userService } from "../services/userService.js";
+import { subscriptionService } from "../services/subscriptionService.js";
 
 const AuthContext = createContext();
 
@@ -16,20 +19,31 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Mock user data for demo purposes
+  // Check for existing authentication
   useEffect(() => {
-    // Simulate checking for existing authentication
     const checkAuth = async () => {
       try {
-        // In a real app, you'd check localStorage, cookies, or make an API call
+        const token = localStorage.getItem("token");
         const savedUser = localStorage.getItem("user");
-        if (savedUser) {
-          const parsedUser = JSON.parse(savedUser);
-          setUser(parsedUser);
-          setIsAuthenticated(true);
+
+        if (token && savedUser) {
+          try {
+            // Verify token is still valid by fetching current user
+            const userData = await authService.getCurrentUser();
+            setUser(userData.user || JSON.parse(savedUser));
+            setIsAuthenticated(true);
+          } catch (error) {
+            // Token invalid, clear storage
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            setUser(null);
+            setIsAuthenticated(false);
+          }
         }
       } catch (error) {
         console.error("Auth check failed:", error);
+        setUser(null);
+        setIsAuthenticated(false);
       } finally {
         setLoading(false);
       }
@@ -41,83 +55,175 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      // Mock login - replace with actual API call
-      const mockUser = {
-        id: "1",
-        name: "Demo User",
-        email: email,
-        avatar:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-        subscription: "free", // free, premium, gold
-        joinDate: new Date().toISOString(),
-      };
 
-      localStorage.setItem("user", JSON.stringify(mockUser));
-      setUser(mockUser);
-      setIsAuthenticated(true);
-      return { success: true };
+      // Real API call for login
+      const response = await authService.login({ email, password });
+      console.log("AuthService response:", response);
+
+      if (response && response.success && response.user) {
+        setUser(response.user);
+        setIsAuthenticated(true);
+        return { success: true };
+      } else {
+        return {
+          success: false,
+          error: response?.message || response?.error || "Login failed",
+        };
+      }
     } catch (error) {
-      console.error("Login failed:", error);
-      return { success: false, error: error.message };
+      console.error("Login failed in AuthContext:", error);
+      return {
+        success: false,
+        error:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Network error occurred",
+      };
     } finally {
-      setLoading(false);
+      // Use a small delay to prevent rapid state changes
+      setTimeout(() => {
+        setLoading(false);
+      }, 100);
     }
   };
 
   const signup = async (userData) => {
     try {
       setLoading(true);
-      // Mock signup - replace with actual API call
-      const newUser = {
-        id: Date.now().toString(),
-        name: userData.name,
-        email: userData.email,
-        avatar: `https://images.unsplash.com/photo-${Math.floor(
-          Math.random() * 1000000000
-        )}?w=100&h=100&fit=crop`,
-        subscription: "free",
-        joinDate: new Date().toISOString(),
-      };
 
-      localStorage.setItem("user", JSON.stringify(newUser));
-      setUser(newUser);
-      setIsAuthenticated(true);
-      return { success: true };
+      // Real API call for signup
+      const response = await authService.register(userData);
+
+      if (response.success && response.user) {
+        setUser(response.user);
+        setIsAuthenticated(true);
+        return { success: true };
+      } else {
+        return { success: false, error: response.message || "Signup failed" };
+      }
     } catch (error) {
       console.error("Signup failed:", error);
-      return { success: false, error: error.message };
+      return {
+        success: false,
+        error:
+          error.response?.data?.message || error.message || "Signup failed",
+      };
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
-    setIsAuthenticated(false);
-  };
-
-  const updateSubscription = (planType) => {
-    if (user) {
-      const updatedUser = { ...user, subscription: planType };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      setUser(updatedUser);
+  const logout = async () => {
+    try {
+      // Call backend logout endpoint
+      await authService.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // Clear local state regardless of API call result
+      setUser(null);
+      setIsAuthenticated(false);
     }
   };
 
-  const updateProfile = (profileData) => {
-    if (user) {
-      const updatedUser = { ...user, ...profileData };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      setUser(updatedUser);
+  const updateSubscription = async (planType) => {
+    try {
+      const response = await subscriptionService.subscribeToPlan(planType);
+      if (response.success) {
+        const updatedUser = { ...user, subscription: planType };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        return { success: true };
+      }
+      return {
+        success: false,
+        error: response.message || "Subscription update failed",
+      };
+    } catch (error) {
+      console.error("Subscription update failed:", error);
+      return {
+        success: false,
+        error:
+          error.response?.data?.message ||
+          error.message ||
+          "Subscription update failed",
+      };
     }
   };
 
-  const completeOnboarding = () => {
-    if (user) {
-      const updatedUser = { ...user, onboardingComplete: true };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      setUser(updatedUser);
+  const updateProfile = async (profileData) => {
+    try {
+      const response = await userService.updateProfile(profileData);
+      if (response.success && response.data) {
+        const updatedUser = { ...user, ...response.data };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        return { success: true };
+      }
+      return {
+        success: false,
+        error: response.message || "Profile update failed",
+      };
+    } catch (error) {
+      console.error("Profile update failed:", error);
+      return {
+        success: false,
+        error:
+          error.response?.data?.message ||
+          error.message ||
+          "Profile update failed",
+      };
+    }
+  };
+
+  const completeOnboarding = async (profileData = {}) => {
+    try {
+      // Combine onboarding completion with profile data
+      const updateData = {
+        ...profileData,
+        onboardingComplete: true,
+      };
+
+      const response = await userService.updateProfile(updateData);
+      console.log("Update profile response:", response);
+
+      if (response.success && (response.user || response.data)) {
+        const updatedUser = response.user || response.data;
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        return { success: true };
+      }
+      return {
+        success: false,
+        error: response.message || "Onboarding completion failed",
+      };
+    } catch (error) {
+      console.error("Onboarding completion failed:", error);
+      return {
+        success: false,
+        error: error.message || "Onboarding completion failed",
+      };
+    }
+  };
+
+  const updateUserStatus = async (isOnline) => {
+    try {
+      const response = await userService.updateUserStatus(isOnline);
+      if (response.success && response.data) {
+        const updatedUser = {
+          ...user,
+          status: {
+            ...user?.status,
+            isOnline,
+            lastSeen: new Date().toISOString(),
+          },
+        };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        return { success: true };
+      }
+    } catch (error) {
+      console.error("Status update failed:", error);
     }
   };
 
@@ -125,12 +231,14 @@ export const AuthProvider = ({ children }) => {
     user,
     isAuthenticated,
     loading,
+    token: localStorage.getItem("token"),
     login,
     signup,
     logout,
     updateSubscription,
     updateProfile,
     completeOnboarding,
+    updateUserStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
